@@ -73,7 +73,34 @@
       const d = await res.json();
       const sources = (d.sources || []).map((s,i)=>`<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-3">${s.text.slice(0,300)}…</div></div>`).join('');
       const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs">${x}</span>`).join(' ');
+      const r = d.risk;
+      const c = r?.color || 'slate';
+      const icon = r?.level === 'high' ? '🚨' : r?.level === 'moderate' ? '⚠️' : '✅';
+      const action = r?.level === 'high'
+        ? '<div class="mt-3"><a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a></div>'
+        : '';
+      const matched = (r?.matched_symptoms||[]).slice(0,10).map(s=>`<span class="px-2 py-0.5 rounded-full bg-white/70 border border-${c}-300 text-${c}-900 text-xs">${s.name} · ${s.weight}</span>`).join(' ');
+      const alarms = (r?.alarm_keywords||[]).slice(0,8).map(k=>`<span class="px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-xs font-semibold">${k}</span>`).join(' ');
+      const reasons = (r?.reasons||[]).map(x=>`<li>${x}</li>`).join('');
+      const riskHtml = r ? `
+        <div class="p-4 rounded-2xl border-2 border-${c}-300 bg-${c}-50">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl">${icon}</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-extrabold text-${c}-900">${r.label}</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity score ${r.score}</span>
+              </div>
+              <p class="mt-1 text-sm text-${c}-900">${r.advice}</p>
+              ${reasons ? `<ul class="mt-2 list-disc list-inside text-xs text-${c}-900/80 space-y-0.5">${reasons}</ul>` : ''}
+              ${alarms ? `<div class="mt-2"><div class="text-xs font-semibold text-${c}-900 mb-1">Alarm keywords</div><div class="flex flex-wrap gap-1">${alarms}</div></div>` : ''}
+              ${matched ? `<div class="mt-2"><div class="text-xs font-semibold text-${c}-900 mb-1">Recognised symptoms (with severity)</div><div class="flex flex-wrap gap-1">${matched}</div></div>` : ''}
+              ${action}
+            </div>
+          </div>
+        </div>` : '';
       result.innerHTML = `
+        ${riskHtml}
         <div class="prose prose-sm max-w-none">${marked.parse(d.explanation || '')}</div>
         ${dis ? `<div><div class="text-xs font-semibold text-slate-600 mb-1">Diseases mentioned in report</div><div class="flex flex-wrap gap-1">${dis}</div></div>` : ''}
         ${sources ? `<details class="mt-2"><summary class="cursor-pointer text-sm font-semibold text-slate-700">Retrieved knowledge-base passages (${d.sources.length})</summary><div class="mt-2 space-y-2">${sources}</div></details>` : ''}

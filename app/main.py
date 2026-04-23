@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from . import ml, symptoms as sym_mod, rag
+from . import ml, symptoms as sym_mod, rag, risk as risk_mod
 
 app = FastAPI(title="MediScope AI", version="1.0")
 
@@ -71,6 +71,7 @@ async def api_image_predict(
     except Exception as e:
         raise HTTPException(500, f"Model inference failed: {e}")
     result["preview"] = ml.encode_image_b64(data)
+    result["risk"] = risk_mod.assess_image_finding(result)
     try:
         result["explanation"] = rag.explain_image_finding(result)
     except Exception as e:
@@ -116,7 +117,10 @@ async def api_report_analyze(
             raise HTTPException(400, "Could not read uploaded file as text.")
     if len(body) < 20:
         raise HTTPException(400, "Please provide at least a short medical report (20+ characters).")
-    return rag.analyze_report(body[:8000])
+    body = body[:8000]
+    result = rag.analyze_report(body)
+    result["risk"] = risk_mod.assess_report(body)
+    return result
 
 
 # ----------- API: Chat -----------------------------------------------------

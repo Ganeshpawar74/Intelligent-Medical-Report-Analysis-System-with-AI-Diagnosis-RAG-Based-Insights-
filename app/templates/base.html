@@ -9,6 +9,12 @@
   <link rel="stylesheet" href="/static/styles.css" />
   <script>
     tailwind.config = {
+      safelist: [
+        'bg-emerald-50','bg-emerald-200','border-emerald-300','text-emerald-900',
+        'bg-amber-50','bg-amber-200','border-amber-300','text-amber-900',
+        'bg-rose-50','bg-rose-200','border-rose-300','text-rose-900',
+        'bg-slate-50','bg-slate-200','border-slate-300','text-slate-900',
+      ],
       theme: {
         extend: {
           fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] },
