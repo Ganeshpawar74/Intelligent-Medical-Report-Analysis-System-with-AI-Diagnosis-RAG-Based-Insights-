@@ -47,7 +47,7 @@
               <div class="text-xs text-slate-400">PNG · JPG · JPEG (≤ 10 MB)</div>
             </div>
             <img id="dzPreview" class="hidden absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] rounded-xl object-cover" />
-            <input id="imgFile" name="file" type="file" accept="image/*" class="hidden" required>
+            <input id="imgFile" name="file" type="file" accept="image/*" class="hidden">
           </label>
           <button type="button" id="dzClear" class="hidden absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-600 shadow">✕</button>
         </div>
@@ -139,9 +139,13 @@
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!fileInput.files?.[0]) return;
+    if (!fileInput.files?.[0]) {
+      alert('Please choose an image first.');
+      return;
+    }
     const fd = new FormData();
-    const task = form.querySelector('input[name=task]:checked').value;
+    const taskEl = document.querySelector('input[name=task]:checked');
+    const task = taskEl ? taskEl.value : 'brain_tumor';
     fd.append('task', task);
     fd.append('file', fileInput.files[0]);
     placeholder.classList.add('hidden');
