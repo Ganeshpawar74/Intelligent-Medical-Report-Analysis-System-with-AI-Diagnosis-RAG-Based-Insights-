@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from . import ml, symptoms as sym_mod, rag, risk as risk_mod
+from . import ml, symptoms as sym_mod, rag, risk as risk_mod, glossary as gloss_mod
 
 app = FastAPI(title="MediScope AI", version="1.0")
 
@@ -141,6 +141,18 @@ def api_chat(req: ChatRequest):
         raise HTTPException(400, "Empty message.")
     history = [m.model_dump() for m in req.history]
     return rag.chat(req.message.strip(), history=history)
+
+
+@app.get("/api/glossary/terms")
+def api_glossary_terms():
+    return {"terms": gloss_mod.all_terms()}
+
+
+@app.get("/api/glossary/define")
+def api_glossary_define(term: str):
+    if not term or len(term) > 80:
+        raise HTTPException(status_code=400, detail="term required (≤80 chars)")
+    return gloss_mod.define(term)
 
 
 @app.get("/api/health")

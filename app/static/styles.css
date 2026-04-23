@@ -7,3 +7,46 @@
 .prose ul { list-style:disc; padding-left:1.25rem; }
 .prose ol { list-style:decimal; padding-left:1.25rem; }
 .prose p { margin:.5em 0; }
+
+/* --- Interactive medical-term glossary --- */
+.med-term {
+  background: linear-gradient(180deg, transparent 60%, rgba(26,125,240,.18) 60%);
+  color: #0c4a6e;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 2px;
+  transition: background .15s, color .15s;
+  text-decoration: none;
+}
+.med-term:hover { background: rgba(26,125,240,.28); color: #082f49; }
+.med-pop {
+  position: absolute; z-index: 1000; max-width: 320px; min-width: 240px;
+  background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 12px 32px -8px rgba(15,23,42,.18), 0 4px 8px -4px rgba(15,23,42,.08);
+  font-size: 13px; line-height: 1.45; opacity: 0; transform: translateY(-4px);
+  transition: opacity .15s ease-out, transform .15s ease-out;
+}
+.med-pop-in { opacity: 1; transform: translateY(0); }
+.med-pop-head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .6rem .8rem; border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(135deg,#eff6ff,#ecfdf5); border-radius: 12px 12px 0 0;
+}
+.med-pop-pill {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  background: #1a7df0; color: white; padding: 2px 8px; border-radius: 999px;
+}
+.med-pop-term { font-weight: 700; color: #0f172a; text-transform: capitalize; }
+.med-pop-body { padding: .7rem .8rem; color: #334155; }
+.med-pop-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .5rem .8rem; border-top: 1px solid #f1f5f9; font-size: 11px; color: #64748b;
+  background: #f8fafc; border-radius: 0 0 12px 12px;
+}
+.med-pop-foot a { color: #1a7df0; font-weight: 600; }
+.med-pop-skel {
+  height: 10px; width: 100%; background: linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9);
+  background-size: 200% 100%; animation: shimmer 1.2s infinite linear; border-radius: 4px; margin: 4px 0;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

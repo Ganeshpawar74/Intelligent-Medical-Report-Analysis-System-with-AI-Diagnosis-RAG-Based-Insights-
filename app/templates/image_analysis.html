@@ -237,7 +237,7 @@
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-${accent}-100 text-${accent}-800 border border-${accent}-200">
             ${isNormal ? '✓ Normal scan' : '⚠ Finding detected'}
           </div>
-          <div class="mt-2 text-3xl font-extrabold text-slate-900 capitalize">${d.label}</div>
+          <div class="mt-2 text-3xl font-extrabold text-slate-900 capitalize"><span class="med-term" data-term="${(d.label||'').toLowerCase()}">${d.label}</span></div>
           <div class="mt-3 flex items-center gap-4">
             <div class="relative">
               ${gauge(d.confidence*100, gaugeColor)}
@@ -262,6 +262,7 @@
       </div>
     `;
     resultEl.classList.remove('hidden');
+    if (window.Glossary) { Glossary.init().then(()=>Glossary.highlight(resultEl)); }
     const tog = document.getElementById('explToggle');
     const blk = document.getElementById('explBlock');
     const chev = document.getElementById('explChev');

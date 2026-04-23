@@ -67,6 +67,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/static/app.js"></script>
+  <script src="/static/glossary.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => { if (window.Glossary) { Glossary.init(); Glossary.attach(); } });</script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

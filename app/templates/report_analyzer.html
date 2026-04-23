@@ -121,7 +121,7 @@
         ? '<a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a>'
         : '';
       const matched = (r?.matched_symptoms||[]).slice(0,12).map(s=>`<span class="px-2 py-0.5 rounded-full bg-white/70 border border-${c}-300 text-${c}-900 text-xs">${s.name} · sev ${s.weight}</span>`).join(' ');
-      const alarms = (r?.alarm_keywords||[]).slice(0,8).map(k=>`<span class="px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-xs font-semibold">${k}</span>`).join(' ');
+      const alarms = (r?.alarm_keywords||[]).slice(0,8).map(k=>`<span class="med-term px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-xs font-semibold" data-term="${k.toLowerCase()}" style="background:#fecaca">${k}</span>`).join(' ');
       const reasons = (r?.reasons||[]).map(x=>`<li>${x}</li>`).join('');
       const pulse = r?.level === 'high' ? 'animate-pulse' : '';
       const riskHtml = r ? `
@@ -151,6 +151,7 @@
         ${sources ? `<details class="rounded-xl border border-slate-200 overflow-hidden"><summary class="cursor-pointer px-4 py-3 bg-slate-50 hover:bg-slate-100 text-sm font-semibold text-slate-800">📚 Retrieved knowledge-base passages (${d.sources.length})</summary><div class="p-3 space-y-2 bg-white">${sources}</div></details>` : ''}
       `;
       result.classList.remove('hidden');
+      if (window.Glossary) { Glossary.init().then(()=>Glossary.highlight(result)); }
     } catch (err) {
       result.innerHTML = `<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"><strong>Error:</strong> ${err.message}</div>`;
       result.classList.remove('hidden');
