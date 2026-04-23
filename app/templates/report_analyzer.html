@@ -1,43 +1,77 @@
 {% extends "base.html" %}
-{% block title %}Report Analyzer · MediScope AI{% endblock %}
+{% block title %}Report Analyzer · HealthVerse AI{% endblock %}
 {% block content %}
-<div class="grid lg:grid-cols-2 gap-8">
-  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-    <h1 class="text-2xl font-bold text-slate-900">Medical Report Analyzer</h1>
-    <p class="mt-1 text-sm text-slate-600">
-      Paste a medical report or upload a plain-text file. The analyzer retrieves
-      similar transcriptions from our knowledge base and uses Gemini to give you a
-      friendly explanation, key findings, and suggested precautions.
-    </p>
-    <form id="repForm" class="mt-6 space-y-4">
-      <textarea name="text" id="repText" rows="14" placeholder="Paste your medical report here…"
-        class="w-full p-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring focus:ring-brand-100 text-sm font-mono"></textarea>
-      <div class="flex items-center gap-3">
-        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium cursor-pointer">
-          📎 Upload .txt
-          <input id="repFile" name="file" type="file" accept=".txt,text/plain" class="hidden">
-        </label>
-        <span id="repFileName" class="text-xs text-slate-500"></span>
+<div class="mb-6">
+  <div class="flex items-center gap-2 text-sm text-slate-500"><span>📄 AI Tools</span><span>›</span><span class="font-semibold text-slate-700">Report Analyzer</span></div>
+  <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Decode any Medical Report</h1>
+  <p class="mt-1 text-slate-600 max-w-2xl">Paste a clinical report, lab result, or radiology summary. We will explain it in plain language, flag risk, and suggest next steps.</p>
+</div>
+
+<div class="grid lg:grid-cols-5 gap-6">
+  <section class="lg:col-span-2 space-y-5">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-bold text-slate-900">Your report</h2>
+        <span id="repCount" class="text-xs text-slate-400">0 chars</span>
       </div>
-      <button type="submit" id="repBtn" class="w-full py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 disabled:opacity-50 transition">
-        Analyze report
-      </button>
-      <div class="flex flex-wrap gap-2 text-xs">
-        <span class="text-slate-500">Try a sample:</span>
-        <button type="button" data-sample="0" class="sampleBtn underline text-brand-600">Allergic rhinitis</button>
-        <button type="button" data-sample="1" class="sampleBtn underline text-brand-600">Chest pain</button>
+      <form id="repForm" class="space-y-4">
+        <div class="relative">
+          <textarea name="text" id="repText" rows="13" placeholder="Paste your medical report here…&#10;&#10;Example: SUBJECTIVE: 45-year-old male presents with chest tightness…"
+            class="w-full p-4 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 text-sm font-mono resize-none transition"></textarea>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium cursor-pointer transition">
+            📎 Attach .txt
+            <input id="repFile" name="file" type="file" accept=".txt,text/plain" class="hidden">
+          </label>
+          <button type="button" id="repClear" class="px-3 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-sm text-slate-700 transition">Clear</button>
+          <span id="repFileName" class="text-xs text-slate-500 ml-auto truncate"></span>
+        </div>
+        <button type="submit" id="repBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold shadow-lg shadow-brand-600/20 hover:from-brand-700 hover:to-brand-800 disabled:opacity-50 transition flex items-center justify-center gap-2">
+          ✨ Analyze report
+        </button>
+      </form>
+    </div>
+
+    <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-50 to-emerald-50 border border-brand-100">
+      <h3 class="text-sm font-bold text-slate-900 mb-2">Try a sample</h3>
+      <div class="space-y-2">
+        <button data-sample="0" class="sampleBtn w-full text-left p-3 rounded-xl bg-white hover:bg-brand-50 border border-slate-200 hover:border-brand-300 transition">
+          <div class="text-xs font-semibold text-brand-700">🌿 Allergies</div>
+          <div class="text-xs text-slate-600 mt-0.5 line-clamp-2">23-year-old female with seasonal nasal congestion and itchy eyes…</div>
+        </button>
+        <button data-sample="1" class="sampleBtn w-full text-left p-3 rounded-xl bg-white hover:bg-brand-50 border border-slate-200 hover:border-brand-300 transition">
+          <div class="text-xs font-semibold text-rose-700">🚨 Acute chest pain</div>
+          <div class="text-xs text-slate-600 mt-0.5 line-clamp-2">Sharp chest pain radiating to the left arm, ST elevation on ECG…</div>
+        </button>
+        <button data-sample="2" class="sampleBtn w-full text-left p-3 rounded-xl bg-white hover:bg-brand-50 border border-slate-200 hover:border-brand-300 transition">
+          <div class="text-xs font-semibold text-amber-700">🩻 Radiology</div>
+          <div class="text-xs text-slate-600 mt-0.5 line-clamp-2">CT chest shows a 2.3 cm spiculated nodule in the right upper lobe…</div>
+        </button>
       </div>
-    </form>
+    </div>
   </section>
 
-  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-    <h2 class="text-xl font-bold text-slate-900">Plain-language explanation</h2>
-    <div id="repPlaceholder" class="mt-4 text-sm text-slate-500 text-center py-16">Submit a report to see results here.</div>
-    <div id="repLoading" class="hidden mt-4 text-center py-16">
-      <div class="inline-block w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-      <p class="mt-3 text-sm text-slate-600">Analyzing & retrieving context…</p>
+  <section class="lg:col-span-3">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm min-h-[480px]">
+      <h2 class="text-xl font-bold text-slate-900 mb-5">Plain-language explanation</h2>
+
+      <div id="repPlaceholder" class="text-center py-20">
+        <div class="mx-auto h-20 w-20 rounded-3xl bg-gradient-to-br from-brand-50 to-emerald-50 flex items-center justify-center text-4xl">📋</div>
+        <p class="mt-4 text-sm text-slate-500">Paste a report and click <strong>Analyze</strong> to see your AI-powered breakdown.</p>
+      </div>
+
+      <div id="repLoading" class="hidden text-center py-16">
+        <div class="relative mx-auto h-20 w-20">
+          <div class="absolute inset-0 rounded-full border-4 border-brand-100"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-t-brand-600 border-r-brand-600 border-b-transparent border-l-transparent animate-spin"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-2xl">📄</div>
+        </div>
+        <p class="mt-4 text-sm font-medium text-slate-700">Reading, retrieving similar cases, and summarising…</p>
+      </div>
+
+      <div id="repResult" class="hidden space-y-5"></div>
     </div>
-    <div id="repResult" class="hidden mt-4 space-y-4"></div>
   </section>
 </div>
 {% endblock %}
@@ -46,16 +80,23 @@
 <script>
   const samples = [
     "SUBJECTIVE: This 23-year-old female presents with seasonal allergies, runny nose and itchy eyes. She has tried Claritin and Zyrtec with limited relief. OBJECTIVE: Nasal mucosa erythematous and swollen with clear drainage. ASSESSMENT: Allergic rhinitis. PLAN: Trial Zyrtec, Nasonex spray two sprays each nostril for 3 weeks.",
-    "Patient reports sharp central chest pain radiating to the left arm for 30 minutes, associated with diaphoresis and shortness of breath. ECG shows ST elevation in leads II, III, aVF. Troponin elevated. ASSESSMENT: Acute inferior wall myocardial infarction. PLAN: Aspirin 325mg chewed, clopidogrel load, urgent cardiac catheterization."
+    "Patient reports sharp central chest pain radiating to the left arm for 30 minutes, associated with diaphoresis and shortness of breath. ECG shows ST elevation in leads II, III, aVF. Troponin elevated. ASSESSMENT: Acute inferior wall myocardial infarction. PLAN: Aspirin 325mg chewed, clopidogrel load, urgent cardiac catheterization.",
+    "CT CHEST WITHOUT CONTRAST: There is a 2.3 cm spiculated nodule in the right upper lobe with associated pleural tethering. Mediastinal lymphadenopathy is noted, largest node 1.4 cm in the right paratracheal region. No pleural effusion. IMPRESSION: Suspicious pulmonary nodule, recommend tissue biopsy and PET-CT for staging.",
   ];
   document.querySelectorAll('.sampleBtn').forEach(b=>{
-    b.addEventListener('click', ()=>{ document.getElementById('repText').value = samples[Number(b.dataset.sample)]; });
+    b.addEventListener('click', ()=>{
+      document.getElementById('repText').value = samples[Number(b.dataset.sample)];
+      updateCount();
+    });
   });
 
+  const ta = document.getElementById('repText');
+  const cntEl = document.getElementById('repCount');
+  function updateCount() { cntEl.textContent = `${ta.value.length} chars`; }
+  ta.addEventListener('input', updateCount);
+  document.getElementById('repClear').addEventListener('click', ()=>{ ta.value=''; updateCount(); });
   const fileInput = document.getElementById('repFile');
-  fileInput.addEventListener('change', ()=>{
-    document.getElementById('repFileName').textContent = fileInput.files?.[0]?.name || '';
-  });
+  fileInput.addEventListener('change', ()=>{ document.getElementById('repFileName').textContent = fileInput.files?.[0]?.name || ''; });
 
   const form = document.getElementById('repForm');
   form.addEventListener('submit', async (e)=>{
@@ -71,43 +112,47 @@
       const res = await fetch('/api/report/analyze', { method:'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
       const d = await res.json();
-      const sources = (d.sources || []).map((s,i)=>`<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-3">${s.text.slice(0,300)}…</div></div>`).join('');
-      const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs">${x}</span>`).join(' ');
+      const sources = (d.sources || []).map((s,i)=>`<div class="p-3 rounded-lg bg-white border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-3">${s.text.slice(0,300)}…</div></div>`).join('');
+      const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs font-medium">${x}</span>`).join(' ');
       const r = d.risk;
       const c = r?.color || 'slate';
       const icon = r?.level === 'high' ? '🚨' : r?.level === 'moderate' ? '⚠️' : '✅';
       const action = r?.level === 'high'
-        ? '<div class="mt-3"><a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a></div>'
+        ? '<a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a>'
         : '';
-      const matched = (r?.matched_symptoms||[]).slice(0,10).map(s=>`<span class="px-2 py-0.5 rounded-full bg-white/70 border border-${c}-300 text-${c}-900 text-xs">${s.name} · ${s.weight}</span>`).join(' ');
+      const matched = (r?.matched_symptoms||[]).slice(0,12).map(s=>`<span class="px-2 py-0.5 rounded-full bg-white/70 border border-${c}-300 text-${c}-900 text-xs">${s.name} · sev ${s.weight}</span>`).join(' ');
       const alarms = (r?.alarm_keywords||[]).slice(0,8).map(k=>`<span class="px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-xs font-semibold">${k}</span>`).join(' ');
       const reasons = (r?.reasons||[]).map(x=>`<li>${x}</li>`).join('');
+      const pulse = r?.level === 'high' ? 'animate-pulse' : '';
       const riskHtml = r ? `
-        <div class="p-4 rounded-2xl border-2 border-${c}-300 bg-${c}-50">
+        <div class="p-5 rounded-2xl border-2 border-${c}-300 bg-${c}-50 ${pulse}">
           <div class="flex items-start gap-3">
-            <div class="text-2xl">${icon}</div>
+            <div class="text-3xl">${icon}</div>
             <div class="flex-1">
               <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-extrabold text-${c}-900">${r.label}</h3>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity score ${r.score}</span>
+                <h3 class="font-extrabold text-${c}-900 text-lg">${r.label}</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity ${r.score}</span>
               </div>
               <p class="mt-1 text-sm text-${c}-900">${r.advice}</p>
               ${reasons ? `<ul class="mt-2 list-disc list-inside text-xs text-${c}-900/80 space-y-0.5">${reasons}</ul>` : ''}
-              ${alarms ? `<div class="mt-2"><div class="text-xs font-semibold text-${c}-900 mb-1">Alarm keywords</div><div class="flex flex-wrap gap-1">${alarms}</div></div>` : ''}
-              ${matched ? `<div class="mt-2"><div class="text-xs font-semibold text-${c}-900 mb-1">Recognised symptoms (with severity)</div><div class="flex flex-wrap gap-1">${matched}</div></div>` : ''}
+              ${alarms ? `<div class="mt-3"><div class="text-xs font-semibold text-${c}-900 mb-1">Alarm keywords</div><div class="flex flex-wrap gap-1">${alarms}</div></div>` : ''}
+              ${matched ? `<div class="mt-3"><div class="text-xs font-semibold text-${c}-900 mb-1">Recognised symptoms (with severity weight)</div><div class="flex flex-wrap gap-1">${matched}</div></div>` : ''}
               ${action}
             </div>
           </div>
         </div>` : '';
       result.innerHTML = `
         ${riskHtml}
-        <div class="prose prose-sm max-w-none">${marked.parse(d.explanation || '')}</div>
-        ${dis ? `<div><div class="text-xs font-semibold text-slate-600 mb-1">Diseases mentioned in report</div><div class="flex flex-wrap gap-1">${dis}</div></div>` : ''}
-        ${sources ? `<details class="mt-2"><summary class="cursor-pointer text-sm font-semibold text-slate-700">Retrieved knowledge-base passages (${d.sources.length})</summary><div class="mt-2 space-y-2">${sources}</div></details>` : ''}
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-50/40 to-white border border-brand-100">
+          <div class="text-xs font-bold uppercase tracking-wide text-brand-700 mb-1">🤖 AI Explanation</div>
+          <div class="prose prose-sm max-w-none">${marked.parse(d.explanation || '')}</div>
+        </div>
+        ${dis ? `<div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs font-bold uppercase tracking-wide text-slate-600 mb-2">Diseases mentioned</div><div class="flex flex-wrap gap-1">${dis}</div></div>` : ''}
+        ${sources ? `<details class="rounded-xl border border-slate-200 overflow-hidden"><summary class="cursor-pointer px-4 py-3 bg-slate-50 hover:bg-slate-100 text-sm font-semibold text-slate-800">📚 Retrieved knowledge-base passages (${d.sources.length})</summary><div class="p-3 space-y-2 bg-white">${sources}</div></details>` : ''}
       `;
       result.classList.remove('hidden');
     } catch (err) {
-      result.innerHTML = `<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">${err.message}</div>`;
+      result.innerHTML = `<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"><strong>Error:</strong> ${err.message}</div>`;
       result.classList.remove('hidden');
     } finally {
       loading.classList.add('hidden');

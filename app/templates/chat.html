@@ -1,47 +1,74 @@
 {% extends "base.html" %}
-{% block title %}AI Chatbot · MediScope AI{% endblock %}
+{% block title %}AI Chatbot · HealthVerse AI{% endblock %}
 {% block content %}
-<div class="grid lg:grid-cols-[1fr_320px] gap-8">
-  <section class="p-0 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col h-[75vh]">
-    <div class="p-4 border-b border-slate-200 flex items-center gap-3">
-      <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-brand-600 text-white">🤖</span>
-      <div>
-        <div class="font-bold text-slate-900">MedAssist Chatbot</div>
-        <div class="text-xs text-slate-500">Grounded in disease KB + medical transcription corpus · Powered by Gemini</div>
+<div class="mb-6">
+  <div class="flex items-center gap-2 text-sm text-slate-500"><span>💬 AI Tools</span><span>›</span><span class="font-semibold text-slate-700">AI Chatbot</span></div>
+  <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Chat with MedAssist</h1>
+  <p class="mt-1 text-slate-600 max-w-2xl">Ask anything — symptoms, diseases, treatments, or how to read a report. Answers are grounded in our medical knowledge base and cite their sources.</p>
+</div>
+
+<div class="grid lg:grid-cols-[1fr_320px] gap-6">
+  <section class="rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col h-[72vh] overflow-hidden">
+    <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-brand-50 to-emerald-50 flex items-center gap-3">
+      <div class="relative">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-brand-600 text-white text-lg shadow">🤖</span>
+        <span class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white"></span>
       </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-slate-900">MedAssist</div>
+        <div class="text-xs text-slate-500 truncate">Online · Powered by Gemini · RAG over disease KB + transcriptions</div>
+      </div>
+      <button id="chatClear" class="text-xs px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 transition">Clear</button>
     </div>
-    <div id="chatLog" class="flex-1 overflow-y-auto p-4 space-y-4">
+
+    <div id="chatLog" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
+      <!-- Welcome bubble -->
       <div class="flex gap-3">
-        <span class="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 text-brand-700 inline-flex items-center justify-center text-sm">🤖</span>
-        <div class="prose prose-sm max-w-none p-3 rounded-2xl bg-slate-100 text-slate-800 max-w-[85%]">
-          Hi! I'm MedAssist. Ask me about diseases, symptoms, treatments, or anything from a medical report.
-          I will cite the knowledge-base passages I use. <strong>I'm not a substitute for a doctor</strong>—please consult a clinician for diagnosis or treatment.
+        <span class="flex-shrink-0 h-9 w-9 rounded-2xl bg-gradient-to-br from-emerald-400 to-brand-600 text-white inline-flex items-center justify-center text-base shadow">🤖</span>
+        <div class="max-w-[85%]">
+          <div class="prose prose-sm max-w-none p-4 rounded-2xl rounded-tl-sm bg-white border border-slate-200 shadow-sm text-slate-800">
+            👋 Hi there! I'm <strong>MedAssist</strong>. Ask me about a condition, symptom, treatment, or how to interpret a finding from a report. I will cite the knowledge-base passages I use.
+            <div class="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2"><strong>Reminder:</strong> I'm not a substitute for a clinician. For diagnosis or treatment, please see a doctor.</div>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">just now</div>
         </div>
       </div>
     </div>
-    <form id="chatForm" class="p-3 border-t border-slate-200 flex gap-2">
-      <input id="chatInput" type="text" placeholder="Ask about a condition, symptom, or treatment…" class="flex-1 p-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring focus:ring-brand-100 text-sm" required />
-      <button id="chatBtn" class="px-5 py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 disabled:opacity-50 transition">Send</button>
+
+    <form id="chatForm" class="p-3 border-t border-slate-200 bg-white">
+      <div class="flex gap-2 items-end">
+        <div class="flex-1 relative">
+          <textarea id="chatInput" rows="1" placeholder="Type your question…" required
+            class="w-full p-3 pr-10 rounded-2xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 text-sm resize-none transition" style="max-height:140px"></textarea>
+          <span class="absolute bottom-1.5 right-3 text-[10px] text-slate-400">⏎ to send · ⇧⏎ for newline</span>
+        </div>
+        <button id="chatBtn" class="h-11 px-5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-semibold hover:from-brand-700 hover:to-brand-800 disabled:opacity-50 transition flex items-center gap-2 shadow-lg shadow-brand-600/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
     </form>
   </section>
 
   <aside class="space-y-4">
-    <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-      <h3 class="font-bold text-slate-900">Try asking</h3>
-      <div class="mt-2 space-y-2 text-sm">
+    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-900 flex items-center gap-2">💡 Try asking</h3>
+      <div class="mt-3 space-y-2 text-sm">
         {% for q in [
           'What are the warning signs of pneumonia?',
           'Explain glioma in simple terms.',
-          'What precautions should I take for diabetes?',
+          'Precautions for a person with diabetes?',
           'I have skin rash, itching and patches — what could it be?',
           'Summarize a typical chest pain assessment.'
         ] %}
-        <button data-q="{{ q }}" class="quick block w-full text-left p-2 rounded-lg hover:bg-brand-50 text-slate-700 hover:text-brand-700 transition">{{ q }}</button>
+        <button data-q="{{ q }}" class="quick group block w-full text-left p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white hover:from-brand-50 hover:to-emerald-50 border border-slate-200 hover:border-brand-300 transition">
+          <span class="text-slate-700 group-hover:text-brand-800">{{ q }}</span>
+        </button>
         {% endfor %}
       </div>
     </div>
-    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
-      <strong>Reminder:</strong> Information here is educational. For diagnosis or treatment, please see a licensed clinician.
+    <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50 border border-amber-200">
+      <h3 class="font-bold text-amber-900 flex items-center gap-2">⚕️ Reminder</h3>
+      <p class="mt-2 text-sm text-amber-900">This is an educational assistant. For diagnosis, prescriptions, or treatment, please consult a licensed clinician.</p>
     </div>
   </aside>
 </div>
@@ -53,19 +80,31 @@
   const form = document.getElementById('chatForm');
   const input = document.getElementById('chatInput');
   const btn = document.getElementById('chatBtn');
+  const clearBtn = document.getElementById('chatClear');
   const history = [];
+
+  function autoresize() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; }
+  input.addEventListener('input', autoresize);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  function timeNow() { const d = new Date(); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
 
   function bubble(role, html, sources) {
     const isUser = role === 'user';
     const wrap = document.createElement('div');
-    wrap.className = `flex gap-3 ${isUser?'flex-row-reverse':''}`;
+    wrap.className = `flex gap-3 ${isUser?'flex-row-reverse':''} animate-fade-in`;
     const sourcesHtml = sources && sources.length
-      ? `<details class="mt-2"><summary class="cursor-pointer text-xs font-semibold opacity-70">Sources (${sources.length})</summary><div class="mt-1 space-y-1">${sources.map((s,i)=>`<div class="text-xs p-2 rounded bg-white/50"><strong>[${i+1}] ${s.title}</strong> · ${s.source}<div class="opacity-80">${s.text.slice(0,200)}…</div></div>`).join('')}</div></details>`
+      ? `<details class="mt-2 group/src"><summary class="cursor-pointer text-xs font-semibold text-brand-700 hover:text-brand-900 inline-flex items-center gap-1">📚 Sources (${sources.length})<span class="text-slate-400 group-open/src:hidden">show</span><span class="text-slate-400 hidden group-open/src:inline">hide</span></summary><div class="mt-2 space-y-1.5">${sources.map((s,i)=>`<div class="text-xs p-2 rounded-lg bg-slate-50 border border-slate-200"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-500">· ${s.source}</span></div><div class="opacity-80 text-slate-600 mt-0.5 line-clamp-2">${s.text.slice(0,220)}…</div></div>`).join('')}</div></details>`
       : '';
     wrap.innerHTML = `
-      <span class="flex-shrink-0 h-8 w-8 rounded-full inline-flex items-center justify-center text-sm ${isUser?'bg-brand-600 text-white':'bg-brand-100 text-brand-700'}">${isUser?'🧑':'🤖'}</span>
-      <div class="prose prose-sm max-w-none p-3 rounded-2xl ${isUser?'bg-brand-600 text-white':'bg-slate-100 text-slate-800'} max-w-[85%]">
-        ${html}${sourcesHtml}
+      <span class="flex-shrink-0 h-9 w-9 rounded-2xl inline-flex items-center justify-center text-base shadow ${isUser?'bg-gradient-to-br from-brand-500 to-brand-700 text-white':'bg-gradient-to-br from-emerald-400 to-brand-600 text-white'}">${isUser?'🧑':'🤖'}</span>
+      <div class="max-w-[85%]">
+        <div class="prose prose-sm max-w-none p-4 rounded-2xl shadow-sm ${isUser?'rounded-tr-sm bg-gradient-to-br from-brand-600 to-brand-700 text-white prose-invert':'rounded-tl-sm bg-white border border-slate-200 text-slate-800'}">
+          ${html}${sourcesHtml}
+        </div>
+        <div class="mt-1 text-[11px] text-slate-400 ${isUser?'text-right':''}">${timeNow()}</div>
       </div>`;
     log.appendChild(wrap);
     log.scrollTop = log.scrollHeight;
@@ -75,8 +114,8 @@
     bubble('user', marked.parseInline(message));
     history.push({role:'user', content: message});
     const typing = document.createElement('div');
-    typing.className = 'flex gap-3';
-    typing.innerHTML = `<span class="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 text-brand-700 inline-flex items-center justify-center text-sm">🤖</span><div class="p-3 rounded-2xl bg-slate-100"><div class="flex gap-1"><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce"></span><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay:.15s"></span><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay:.3s"></span></div></div>`;
+    typing.className = 'flex gap-3 animate-fade-in';
+    typing.innerHTML = `<span class="flex-shrink-0 h-9 w-9 rounded-2xl bg-gradient-to-br from-emerald-400 to-brand-600 text-white inline-flex items-center justify-center text-base shadow">🤖</span><div class="max-w-[85%]"><div class="p-4 rounded-2xl rounded-tl-sm bg-white border border-slate-200 shadow-sm"><div class="flex items-center gap-1.5 text-slate-500 text-xs"><span>MedAssist is thinking</span><span class="flex gap-1 ml-1"><span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-bounce"></span><span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-bounce" style="animation-delay:.15s"></span><span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-bounce" style="animation-delay:.3s"></span></span></div></div></div>`;
     log.appendChild(typing); log.scrollTop = log.scrollHeight;
     btn.disabled = true;
     try {
@@ -86,25 +125,38 @@
       });
       const d = await res.json();
       typing.remove();
-      if (!res.ok) { bubble('assistant', `<span class="text-red-700">${d.detail || 'Failed'}</span>`); return; }
+      if (!res.ok) { bubble('assistant', `<span class="text-rose-700">${d.detail || 'Failed'}</span>`); return; }
       bubble('assistant', marked.parse(d.answer || ''), d.sources);
       history.push({role:'assistant', content: d.answer || ''});
     } catch (err) {
       typing.remove();
-      bubble('assistant', `<span class="text-red-700">${err.message}</span>`);
-    } finally { btn.disabled = false; }
+      bubble('assistant', `<span class="text-rose-700">${err.message}</span>`);
+    } finally { btn.disabled = false; input.focus(); }
   }
 
   form.addEventListener('submit', e=>{
     e.preventDefault();
     const v = input.value.trim();
     if (!v) return;
-    input.value = '';
+    input.value = ''; autoresize();
     send(v);
   });
 
   document.querySelectorAll('.quick').forEach(b=>{
     b.addEventListener('click', ()=>send(b.dataset.q));
   });
+
+  clearBtn.addEventListener('click', ()=>{
+    if (!confirm('Clear the conversation?')) return;
+    history.length = 0;
+    log.innerHTML = '';
+    bubble('assistant', '👋 Hi there! Ask me anything about a condition, symptom, treatment, or report.');
+  });
 </script>
+<style>
+  @keyframes fade-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+  .animate-fade-in { animation: fade-in .25s ease-out; }
+  .prose-invert :where(p,li,strong) { color: white !important; }
+  .prose-invert :where(a) { color: #d9f1ff !important; }
+</style>
 {% endblock %}

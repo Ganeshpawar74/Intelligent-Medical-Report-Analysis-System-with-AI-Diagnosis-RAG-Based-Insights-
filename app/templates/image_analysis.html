@@ -1,55 +1,100 @@
 {% extends "base.html" %}
-{% block title %}Image Analysis · MediScope AI{% endblock %}
+{% block title %}Image Analysis · HealthVerse AI{% endblock %}
 {% block content %}
-<div class="grid lg:grid-cols-2 gap-8">
-  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-    <h1 class="text-2xl font-bold text-slate-900">Medical Image Analysis</h1>
-    <p class="mt-1 text-sm text-slate-600">Upload a brain MRI or chest X-ray. Our trained CNN will return a prediction with confidence and an AI-generated plain-language explanation.</p>
+<div class="mb-6">
+  <div class="flex items-center gap-2 text-sm text-slate-500"><span>🩺 AI Tools</span><span>›</span><span class="font-semibold text-slate-700">Image Analysis</span></div>
+  <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Medical Image Analysis</h1>
+  <p class="mt-1 text-slate-600 max-w-2xl">Upload a brain MRI or chest X-ray and get an instant AI prediction, severity assessment, and a plain-language explanation.</p>
+</div>
 
-    <form id="imgForm" class="mt-6 space-y-5">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Choose model</label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="cursor-pointer p-4 rounded-xl border-2 border-slate-200 hover:border-brand-400 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 transition">
-            <input type="radio" name="task" value="brain_tumor" class="sr-only" checked>
-            <div class="text-2xl">🧠</div>
-            <div class="mt-1 font-semibold text-slate-900">Brain MRI</div>
-            <div class="text-xs text-slate-500">4 classes · EfficientNetB0</div>
+<div class="grid lg:grid-cols-5 gap-6">
+  <!-- Left: Form -->
+  <section class="lg:col-span-2 space-y-5">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="h-7 w-7 inline-flex items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">1</span>
+        <h2 class="font-bold text-slate-900">Choose model</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="cursor-pointer relative p-4 rounded-xl border-2 border-slate-200 hover:border-brand-400 has-[:checked]:border-brand-600 has-[:checked]:bg-gradient-to-br has-[:checked]:from-brand-50 has-[:checked]:to-white transition group">
+          <input type="radio" name="task" value="brain_tumor" class="peer sr-only" checked>
+          <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition"><span class="text-brand-600">●</span></div>
+          <div class="text-3xl">🧠</div>
+          <div class="mt-2 font-bold text-slate-900">Brain MRI</div>
+          <div class="text-xs text-slate-500">4 classes · EfficientNetB0</div>
+        </label>
+        <label class="cursor-pointer relative p-4 rounded-xl border-2 border-slate-200 hover:border-brand-400 has-[:checked]:border-brand-600 has-[:checked]:bg-gradient-to-br has-[:checked]:from-brand-50 has-[:checked]:to-white transition group">
+          <input type="radio" name="task" value="pneumonia" class="peer sr-only">
+          <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition"><span class="text-brand-600">●</span></div>
+          <div class="text-3xl">🫁</div>
+          <div class="mt-2 font-bold text-slate-900">Chest X-ray</div>
+          <div class="text-xs text-slate-500">Binary · EfficientNetB3</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="h-7 w-7 inline-flex items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">2</span>
+        <h2 class="font-bold text-slate-900">Upload image</h2>
+      </div>
+      <form id="imgForm">
+        <div id="dropzone" class="relative group">
+          <label for="imgFile" class="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-brand-500 hover:bg-brand-50/40 transition aspect-[4/3]">
+            <div id="dzInner">
+              <div class="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-100 to-emerald-100 flex items-center justify-center text-brand-700 text-2xl group-hover:scale-110 transition">📤</div>
+              <div class="mt-3 text-sm text-slate-700"><span class="font-semibold text-brand-700">Click to upload</span> or drag &amp; drop</div>
+              <div class="text-xs text-slate-400">PNG · JPG · JPEG (≤ 10 MB)</div>
+            </div>
+            <img id="dzPreview" class="hidden absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] rounded-xl object-cover" />
+            <input id="imgFile" name="file" type="file" accept="image/*" class="hidden" required>
           </label>
-          <label class="cursor-pointer p-4 rounded-xl border-2 border-slate-200 hover:border-brand-400 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 transition">
-            <input type="radio" name="task" value="pneumonia" class="sr-only">
-            <div class="text-2xl">🫁</div>
-            <div class="mt-1 font-semibold text-slate-900">Chest X-ray</div>
-            <div class="text-xs text-slate-500">Binary · EfficientNetB3</div>
-          </label>
+          <button type="button" id="dzClear" class="hidden absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-600 shadow">✕</button>
+        </div>
+        <button type="submit" id="imgBtn" class="mt-5 w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold shadow-lg shadow-brand-600/20 hover:from-brand-700 hover:to-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          Run AI analysis
+        </button>
+      </form>
+    </div>
+
+    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex gap-3">
+      <span class="text-base">⚕️</span>
+      <span>This screening tool does not replace a radiologist. Always confirm findings with a qualified clinician.</span>
+    </div>
+  </section>
+
+  <!-- Right: Results -->
+  <section class="lg:col-span-3">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm min-h-[480px]">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-bold text-slate-900">Result</h2>
+        <div id="stepper" class="flex items-center gap-2 text-xs">
+          <span data-step="1" class="step px-2.5 py-1 rounded-full bg-brand-100 text-brand-700 font-semibold">Upload</span>
+          <span class="text-slate-300">→</span>
+          <span data-step="2" class="step px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">Analyze</span>
+          <span class="text-slate-300">→</span>
+          <span data-step="3" class="step px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 font-semibold">Result</span>
         </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Upload image</label>
-        <label for="imgFile" class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl p-8 cursor-pointer hover:border-brand-400 hover:bg-brand-50/40 transition">
-          <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.9A5 5 0 0117.7 8 4.5 4.5 0 0118 17h-1m-6-4l-3 3m3-3v8m0-8l3 3"/></svg>
-          <div class="text-sm text-slate-600"><span class="font-semibold text-brand-700">Click to upload</span> or drag & drop</div>
-          <div class="text-xs text-slate-400">PNG, JPG up to 10MB</div>
-          <input id="imgFile" name="file" type="file" accept="image/*" class="hidden" required>
-        </label>
-        <div id="imgFileName" class="mt-2 text-xs text-slate-500"></div>
+      <div id="imgPlaceholder" class="text-center py-20">
+        <div class="mx-auto h-20 w-20 rounded-3xl bg-gradient-to-br from-brand-50 to-emerald-50 flex items-center justify-center text-4xl">🔬</div>
+        <p class="mt-4 text-sm text-slate-500">Your AI prediction, severity score, and explanation will appear here.</p>
       </div>
 
-      <button type="submit" id="imgBtn" class="w-full py-3 rounded-xl bg-brand-600 text-white font-semibold shadow hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
-        Analyze image
-      </button>
-    </form>
-  </section>
+      <div id="imgLoading" class="hidden text-center py-16">
+        <div class="relative mx-auto h-20 w-20">
+          <div class="absolute inset-0 rounded-full border-4 border-brand-100"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-t-brand-600 border-r-brand-600 border-b-transparent border-l-transparent animate-spin"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-2xl">🧠</div>
+        </div>
+        <p class="mt-4 text-sm font-medium text-slate-700" id="loadMsg">Loading model…</p>
+        <div class="mt-2 text-xs text-slate-400" id="loadSub">First call may take ~10 seconds while the CNN warms up.</div>
+      </div>
 
-  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-    <h2 class="text-xl font-bold text-slate-900">Prediction</h2>
-    <div id="imgPlaceholder" class="mt-4 text-sm text-slate-500 text-center py-16">Your results will appear here.</div>
-    <div id="imgLoading" class="hidden mt-4 text-center py-16">
-      <div class="inline-block w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-      <p class="mt-3 text-sm text-slate-600">Running model & generating explanation…</p>
+      <div id="imgResult" class="hidden space-y-5"></div>
     </div>
-    <div id="imgResult" class="hidden mt-4 space-y-5"></div>
   </section>
 </div>
 {% endblock %}
@@ -58,36 +103,77 @@
 <script>
   const form = document.getElementById('imgForm');
   const fileInput = document.getElementById('imgFile');
-  const fileNameEl = document.getElementById('imgFileName');
+  const dz = document.getElementById('dropzone');
+  const dzPreview = document.getElementById('dzPreview');
+  const dzInner = document.getElementById('dzInner');
+  const dzClear = document.getElementById('dzClear');
   const placeholder = document.getElementById('imgPlaceholder');
   const loading = document.getElementById('imgLoading');
   const resultEl = document.getElementById('imgResult');
   const btn = document.getElementById('imgBtn');
+  const steps = document.querySelectorAll('.step');
 
-  fileInput.addEventListener('change', () => {
-    fileNameEl.textContent = fileInput.files?.[0]?.name || '';
+  function setStep(n) {
+    steps.forEach(s => {
+      const k = Number(s.dataset.step);
+      s.className = 'step px-2.5 py-1 rounded-full font-semibold ' + (k <= n ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-500');
+    });
+  }
+
+  function setPreview(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    dzPreview.src = url; dzPreview.classList.remove('hidden');
+    dzInner.classList.add('hidden'); dzClear.classList.remove('hidden');
+  }
+
+  fileInput.addEventListener('change', () => setPreview(fileInput.files?.[0]));
+  dzClear.addEventListener('click', () => {
+    fileInput.value = ''; dzPreview.classList.add('hidden'); dzInner.classList.remove('hidden'); dzClear.classList.add('hidden');
+  });
+  ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.firstElementChild.classList.add('border-brand-500','bg-brand-50/40'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.firstElementChild.classList.remove('border-brand-500','bg-brand-50/40'); }));
+  dz.addEventListener('drop', e => {
+    if (e.dataTransfer?.files?.[0]) { fileInput.files = e.dataTransfer.files; setPreview(e.dataTransfer.files[0]); }
   });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!fileInput.files?.[0]) return;
     const fd = new FormData();
     const task = form.querySelector('input[name=task]:checked').value;
     fd.append('task', task);
-    if (!fileInput.files?.[0]) return;
     fd.append('file', fileInput.files[0]);
     placeholder.classList.add('hidden');
     resultEl.classList.add('hidden');
     loading.classList.remove('hidden');
     btn.disabled = true;
+    setStep(2);
+    const msgs = [
+      ['Loading model…', 'First call may take ~10 seconds while the CNN warms up.'],
+      ['Running inference…', 'Forward pass through the convolutional network.'],
+      ['Generating explanation…', 'Retrieving context and asking Gemini.']
+    ];
+    let mi = 0;
+    document.getElementById('loadMsg').textContent = msgs[0][0];
+    document.getElementById('loadSub').textContent = msgs[0][1];
+    const tick = setInterval(() => {
+      mi = Math.min(msgs.length - 1, mi + 1);
+      document.getElementById('loadMsg').textContent = msgs[mi][0];
+      document.getElementById('loadSub').textContent = msgs[mi][1];
+    }, 4000);
     try {
       const res = await fetch('/api/image/predict', { method: 'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
       const data = await res.json();
       renderResult(data);
+      setStep(3);
     } catch (err) {
-      resultEl.innerHTML = `<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">${err.message}</div>`;
+      resultEl.innerHTML = `<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"><strong>Error:</strong> ${err.message}</div>`;
       resultEl.classList.remove('hidden');
+      setStep(1);
     } finally {
+      clearInterval(tick);
       loading.classList.add('hidden');
       btn.disabled = false;
     }
@@ -98,17 +184,18 @@
     const c = r.color || 'slate';
     const icon = r.level === 'high' ? '🚨' : r.level === 'moderate' ? '⚠️' : '✅';
     const action = r.level === 'high'
-      ? '<div class="mt-3"><a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a></div>'
+      ? '<a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a>'
       : '';
     const reasons = (r.reasons||[]).map(x=>`<li>${x}</li>`).join('');
+    const pulse = r.level === 'high' ? 'animate-pulse' : '';
     return `
-      <div class="p-4 rounded-2xl border-2 border-${c}-300 bg-${c}-50">
+      <div class="p-5 rounded-2xl border-2 border-${c}-300 bg-${c}-50 ${pulse}">
         <div class="flex items-start gap-3">
-          <div class="text-2xl">${icon}</div>
+          <div class="text-3xl">${icon}</div>
           <div class="flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-extrabold text-${c}-900">${r.label}</h3>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity score ${r.score}</span>
+              <h3 class="font-extrabold text-${c}-900 text-lg">${r.label}</h3>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity ${r.score}</span>
             </div>
             <p class="mt-1 text-sm text-${c}-900">${r.advice}</p>
             ${reasons ? `<ul class="mt-2 list-disc list-inside text-xs text-${c}-900/80 space-y-0.5">${reasons}</ul>` : ''}
@@ -118,33 +205,70 @@
       </div>`;
   }
 
+  function gauge(pct, color) {
+    const circ = 2 * Math.PI * 36;
+    const offset = circ * (1 - pct/100);
+    return `
+      <svg viewBox="0 0 80 80" class="w-20 h-20 -rotate-90">
+        <circle cx="40" cy="40" r="36" stroke="#e2e8f0" stroke-width="8" fill="none"/>
+        <circle cx="40" cy="40" r="36" stroke="${color}" stroke-width="8" fill="none"
+                stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"
+                style="transition: stroke-dashoffset 1.2s ease-out"/>
+      </svg>`;
+  }
+
   function renderResult(d) {
     const isNormal = d.is_normal;
     const accent = isNormal ? 'emerald' : 'rose';
+    const gaugeColor = isNormal ? '#10b981' : '#f43f5e';
     const probs = Object.entries(d.all_probs || {}).sort((a,b)=>b[1]-a[1]);
     const probsHtml = probs.map(([k,v])=>`
       <div>
-        <div class="flex justify-between text-xs font-medium text-slate-600 mb-1"><span>${k}</span><span>${(v*100).toFixed(1)}%</span></div>
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-brand-500" style="width:${(v*100).toFixed(1)}%"></div></div>
+        <div class="flex justify-between text-xs font-medium text-slate-600 mb-1"><span class="capitalize">${k}</span><span>${(v*100).toFixed(1)}%</span></div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-brand-500 to-brand-700 rounded-full" style="width:${(v*100).toFixed(1)}%; transition:width .8s ease-out"></div></div>
       </div>`).join('');
     resultEl.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-4 items-center">
-        <img src="${d.preview}" class="w-full rounded-xl border border-slate-200 object-cover aspect-square"/>
+      <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-5 items-center">
+        <div class="relative">
+          <img src="${d.preview}" class="w-full rounded-2xl border border-slate-200 object-cover aspect-square shadow-md"/>
+          <div class="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg text-xs font-bold bg-white border border-slate-200 shadow">${d.task.replace('_',' ')}</div>
+        </div>
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-${accent}-100 text-${accent}-800 border border-${accent}-200">
-            ${isNormal ? '✓ Normal' : '⚠ Finding detected'}
+            ${isNormal ? '✓ Normal scan' : '⚠ Finding detected'}
           </div>
-          <div class="mt-2 text-2xl font-extrabold text-slate-900">${d.label}</div>
-          <div class="text-sm text-slate-500">Confidence: <span class="font-semibold text-slate-800">${(d.confidence*100).toFixed(1)}%</span></div>
+          <div class="mt-2 text-3xl font-extrabold text-slate-900 capitalize">${d.label}</div>
+          <div class="mt-3 flex items-center gap-4">
+            <div class="relative">
+              ${gauge(d.confidence*100, gaugeColor)}
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <div class="text-lg font-extrabold text-slate-900">${(d.confidence*100).toFixed(0)}%</div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wide">conf</div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2.5">${probsHtml}</div>
+          </div>
         </div>
       </div>
-      <div class="space-y-3">${probsHtml}</div>
       ${riskBanner(d.risk)}
-      <div class="prose prose-sm max-w-none p-4 rounded-xl bg-slate-50 border border-slate-200" id="explBlock">
-        ${marked.parse(d.explanation || '')}
+      <div>
+        <button id="explToggle" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-brand-50 to-emerald-50 border border-brand-200 hover:from-brand-100 transition">
+          <span class="font-semibold text-brand-800 flex items-center gap-2">🤖 AI Explanation</span>
+          <svg id="explChev" class="w-5 h-5 text-brand-700 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="explBlock" class="prose prose-sm max-w-none mt-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          ${marked.parse(d.explanation || '')}
+        </div>
       </div>
     `;
     resultEl.classList.remove('hidden');
+    const tog = document.getElementById('explToggle');
+    const blk = document.getElementById('explBlock');
+    const chev = document.getElementById('explChev');
+    tog.addEventListener('click', ()=>{
+      blk.classList.toggle('hidden');
+      chev.style.transform = blk.classList.contains('hidden') ? 'rotate(-90deg)' : '';
+    });
   }
 </script>
 {% endblock %}
