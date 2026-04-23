@@ -1,0 +1,9 @@
+.prose pre { background:#0f172a; color:#e2e8f0; padding:.75rem; border-radius:.5rem; overflow:auto; }
+.prose code { background:#f1f5f9; padding:.1em .35em; border-radius:.25rem; font-size:.9em; }
+.prose pre code { background:transparent; padding:0; color:inherit; }
+.prose h1, .prose h2, .prose h3 { font-weight:700; color:#0f172a; margin-top:1em; margin-bottom:.4em; }
+.prose h2 { font-size:1.05rem; }
+.prose h3 { font-size:.95rem; }
+.prose ul { list-style:disc; padding-left:1.25rem; }
+.prose ol { list-style:decimal; padding-left:1.25rem; }
+.prose p { margin:.5em 0; }

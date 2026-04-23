@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Report Analyzer · MediScope AI{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-2 gap-8">
+  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+    <h1 class="text-2xl font-bold text-slate-900">Medical Report Analyzer</h1>
+    <p class="mt-1 text-sm text-slate-600">
+      Paste a medical report or upload a plain-text file. The analyzer retrieves
+      similar transcriptions from our knowledge base and uses Gemini to give you a
+      friendly explanation, key findings, and suggested precautions.
+    </p>
+    <form id="repForm" class="mt-6 space-y-4">
+      <textarea name="text" id="repText" rows="14" placeholder="Paste your medical report here…"
+        class="w-full p-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring focus:ring-brand-100 text-sm font-mono"></textarea>
+      <div class="flex items-center gap-3">
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium cursor-pointer">
+          📎 Upload .txt
+          <input id="repFile" name="file" type="file" accept=".txt,text/plain" class="hidden">
+        </label>
+        <span id="repFileName" class="text-xs text-slate-500"></span>
+      </div>
+      <button type="submit" id="repBtn" class="w-full py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 disabled:opacity-50 transition">
+        Analyze report
+      </button>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="text-slate-500">Try a sample:</span>
+        <button type="button" data-sample="0" class="sampleBtn underline text-brand-600">Allergic rhinitis</button>
+        <button type="button" data-sample="1" class="sampleBtn underline text-brand-600">Chest pain</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+    <h2 class="text-xl font-bold text-slate-900">Plain-language explanation</h2>
+    <div id="repPlaceholder" class="mt-4 text-sm text-slate-500 text-center py-16">Submit a report to see results here.</div>
+    <div id="repLoading" class="hidden mt-4 text-center py-16">
+      <div class="inline-block w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+      <p class="mt-3 text-sm text-slate-600">Analyzing & retrieving context…</p>
+    </div>
+    <div id="repResult" class="hidden mt-4 space-y-4"></div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const samples = [
+    "SUBJECTIVE: This 23-year-old female presents with seasonal allergies, runny nose and itchy eyes. She has tried Claritin and Zyrtec with limited relief. OBJECTIVE: Nasal mucosa erythematous and swollen with clear drainage. ASSESSMENT: Allergic rhinitis. PLAN: Trial Zyrtec, Nasonex spray two sprays each nostril for 3 weeks.",
+    "Patient reports sharp central chest pain radiating to the left arm for 30 minutes, associated with diaphoresis and shortness of breath. ECG shows ST elevation in leads II, III, aVF. Troponin elevated. ASSESSMENT: Acute inferior wall myocardial infarction. PLAN: Aspirin 325mg chewed, clopidogrel load, urgent cardiac catheterization."
+  ];
+  document.querySelectorAll('.sampleBtn').forEach(b=>{
+    b.addEventListener('click', ()=>{ document.getElementById('repText').value = samples[Number(b.dataset.sample)]; });
+  });
+
+  const fileInput = document.getElementById('repFile');
+  fileInput.addEventListener('change', ()=>{
+    document.getElementById('repFileName').textContent = fileInput.files?.[0]?.name || '';
+  });
+
+  const form = document.getElementById('repForm');
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const placeholder = document.getElementById('repPlaceholder');
+    const loading = document.getElementById('repLoading');
+    const result = document.getElementById('repResult');
+    const btn = document.getElementById('repBtn');
+    placeholder.classList.add('hidden'); result.classList.add('hidden'); loading.classList.remove('hidden');
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/report/analyze', { method:'POST', body: fd });
+      if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
+      const d = await res.json();
+      const sources = (d.sources || []).map((s,i)=>`<div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-3">${s.text.slice(0,300)}…</div></div>`).join('');
+      const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs">${x}</span>`).join(' ');
+      result.innerHTML = `
+        <div class="prose prose-sm max-w-none">${marked.parse(d.explanation || '')}</div>
+        ${dis ? `<div><div class="text-xs font-semibold text-slate-600 mb-1">Diseases mentioned in report</div><div class="flex flex-wrap gap-1">${dis}</div></div>` : ''}
+        ${sources ? `<details class="mt-2"><summary class="cursor-pointer text-sm font-semibold text-slate-700">Retrieved knowledge-base passages (${d.sources.length})</summary><div class="mt-2 space-y-2">${sources}</div></details>` : ''}
+      `;
+      result.classList.remove('hidden');
+    } catch (err) {
+      result.innerHTML = `<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">${err.message}</div>`;
+      result.classList.remove('hidden');
+    } finally {
+      loading.classList.add('hidden');
+      btn.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

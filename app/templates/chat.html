@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}AI Chatbot · MediScope AI{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-[1fr_320px] gap-8">
+  <section class="p-0 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col h-[75vh]">
+    <div class="p-4 border-b border-slate-200 flex items-center gap-3">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-brand-600 text-white">🤖</span>
+      <div>
+        <div class="font-bold text-slate-900">MedAssist Chatbot</div>
+        <div class="text-xs text-slate-500">Grounded in disease KB + medical transcription corpus · Powered by Gemini</div>
+      </div>
+    </div>
+    <div id="chatLog" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="flex gap-3">
+        <span class="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 text-brand-700 inline-flex items-center justify-center text-sm">🤖</span>
+        <div class="prose prose-sm max-w-none p-3 rounded-2xl bg-slate-100 text-slate-800 max-w-[85%]">
+          Hi! I'm MedAssist. Ask me about diseases, symptoms, treatments, or anything from a medical report.
+          I will cite the knowledge-base passages I use. <strong>I'm not a substitute for a doctor</strong>—please consult a clinician for diagnosis or treatment.
+        </div>
+      </div>
+    </div>
+    <form id="chatForm" class="p-3 border-t border-slate-200 flex gap-2">
+      <input id="chatInput" type="text" placeholder="Ask about a condition, symptom, or treatment…" class="flex-1 p-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring focus:ring-brand-100 text-sm" required />
+      <button id="chatBtn" class="px-5 py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 disabled:opacity-50 transition">Send</button>
+    </form>
+  </section>
+
+  <aside class="space-y-4">
+    <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-900">Try asking</h3>
+      <div class="mt-2 space-y-2 text-sm">
+        {% for q in [
+          'What are the warning signs of pneumonia?',
+          'Explain glioma in simple terms.',
+          'What precautions should I take for diabetes?',
+          'I have skin rash, itching and patches — what could it be?',
+          'Summarize a typical chest pain assessment.'
+        ] %}
+        <button data-q="{{ q }}" class="quick block w-full text-left p-2 rounded-lg hover:bg-brand-50 text-slate-700 hover:text-brand-700 transition">{{ q }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+      <strong>Reminder:</strong> Information here is educational. For diagnosis or treatment, please see a licensed clinician.
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const log = document.getElementById('chatLog');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('chatBtn');
+  const history = [];
+
+  function bubble(role, html, sources) {
+    const isUser = role === 'user';
+    const wrap = document.createElement('div');
+    wrap.className = `flex gap-3 ${isUser?'flex-row-reverse':''}`;
+    const sourcesHtml = sources && sources.length
+      ? `<details class="mt-2"><summary class="cursor-pointer text-xs font-semibold opacity-70">Sources (${sources.length})</summary><div class="mt-1 space-y-1">${sources.map((s,i)=>`<div class="text-xs p-2 rounded bg-white/50"><strong>[${i+1}] ${s.title}</strong> · ${s.source}<div class="opacity-80">${s.text.slice(0,200)}…</div></div>`).join('')}</div></details>`
+      : '';
+    wrap.innerHTML = `
+      <span class="flex-shrink-0 h-8 w-8 rounded-full inline-flex items-center justify-center text-sm ${isUser?'bg-brand-600 text-white':'bg-brand-100 text-brand-700'}">${isUser?'🧑':'🤖'}</span>
+      <div class="prose prose-sm max-w-none p-3 rounded-2xl ${isUser?'bg-brand-600 text-white':'bg-slate-100 text-slate-800'} max-w-[85%]">
+        ${html}${sourcesHtml}
+      </div>`;
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function send(message) {
+    bubble('user', marked.parseInline(message));
+    history.push({role:'user', content: message});
+    const typing = document.createElement('div');
+    typing.className = 'flex gap-3';
+    typing.innerHTML = `<span class="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 text-brand-700 inline-flex items-center justify-center text-sm">🤖</span><div class="p-3 rounded-2xl bg-slate-100"><div class="flex gap-1"><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce"></span><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay:.15s"></span><span class="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style="animation-delay:.3s"></span></div></div>`;
+    log.appendChild(typing); log.scrollTop = log.scrollHeight;
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/chat', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message, history })
+      });
+      const d = await res.json();
+      typing.remove();
+      if (!res.ok) { bubble('assistant', `<span class="text-red-700">${d.detail || 'Failed'}</span>`); return; }
+      bubble('assistant', marked.parse(d.answer || ''), d.sources);
+      history.push({role:'assistant', content: d.answer || ''});
+    } catch (err) {
+      typing.remove();
+      bubble('assistant', `<span class="text-red-700">${err.message}</span>`);
+    } finally { btn.disabled = false; }
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const v = input.value.trim();
+    if (!v) return;
+    input.value = '';
+    send(v);
+  });
+
+  document.querySelectorAll('.quick').forEach(b=>{
+    b.addEventListener('click', ()=>send(b.dataset.q));
+  });
+</script>
+{% endblock %}

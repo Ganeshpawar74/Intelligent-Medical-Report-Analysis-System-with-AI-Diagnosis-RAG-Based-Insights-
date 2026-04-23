@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MediScope AI{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] },
+          colors: {
+            brand: {
+              50:'#eef9ff',100:'#d9f1ff',200:'#bce5ff',300:'#8ed4ff',
+              400:'#58baff',500:'#319cff',600:'#1a7df0',700:'#1666d6',
+              800:'#1853ad',900:'#1a4889',950:'#142d57'
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased">
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2 group">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold shadow-md group-hover:shadow-lg transition">M</span>
+        <span class="font-bold tracking-tight text-lg text-slate-900">MediScope <span class="text-brand-600">AI</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+        {% set nav = [('home','/','Home'),('image','/image-analysis','Image Analysis'),('report','/report-analyzer','Report Analyzer'),('symptoms','/symptom-checker','Symptom Checker'),('chat','/chat','AI Chatbot')] %}
+        {% for k,href,label in nav %}
+        <a href="{{ href }}" class="px-3 py-2 rounded-lg transition {% if page==k %}bg-brand-50 text-brand-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <button id="navToggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100" aria-label="Open menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileNav" class="hidden md:hidden border-t border-slate-200 bg-white">
+      {% for k,href,label in nav %}
+      <a href="{{ href }}" class="block px-4 py-3 text-sm border-b border-slate-100 {% if page==k %}text-brand-700 bg-brand-50{% else %}text-slate-700{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="mt-16 border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-sm text-slate-500 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+      <p>© MediScope AI — research/educational prototype. <strong>Not a substitute for professional medical advice.</strong></p>
+      <p>Powered by your Keras models, scikit-learn RAG, and Google Gemini.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
