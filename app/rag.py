@@ -182,9 +182,18 @@ REPORT_SYSTEM = (
     "understand. 2) List the key findings as bullet points. 3) Suggest reasonable "
     "next-step recommendations and precautions, drawing on the provided context "
     "passages where relevant. 4) Add a clear disclaimer that this is informational only "
-    "and the user should follow up with a qualified clinician. Respond in well-formatted "
-    "Markdown with the sections: Summary, Key Findings, Possible Conditions Mentioned, "
-    "Recommendations & Precautions, Disclaimer."
+    "and the user should follow up with a qualified clinician.\n\n"
+    "STRICT OUTPUT FORMAT — you MUST follow this exactly:\n"
+    "- Respond in Markdown.\n"
+    "- Do NOT write any preamble or intro sentence before the first heading.\n"
+    "- Use these EXACT five section headings, each on its own line, prefixed with '## ' (two hash signs and a space):\n"
+    "  ## Summary\n"
+    "  ## Key Findings\n"
+    "  ## Possible Conditions Mentioned\n"
+    "  ## Recommendations & Precautions\n"
+    "  ## Disclaimer\n"
+    "- Under each heading, write the relevant content (paragraphs or bullet points starting with '- ').\n"
+    "- Never use bare headings without the '## ' prefix. Never bold a heading instead of using '## '."
 )
 
 

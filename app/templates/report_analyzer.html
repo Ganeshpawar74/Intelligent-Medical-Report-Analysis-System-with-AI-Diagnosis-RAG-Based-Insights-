@@ -137,14 +137,34 @@
   }
 
   // ---- Section parser ----
-  // Split the markdown explanation into named sections by "## Heading" or "**Heading**".
+  // Split the markdown explanation into named sections. Recognises:
+  //   "## Heading", "### Heading", "**Heading**" lines,
+  //   and BARE heading lines that exactly match one of the known section names.
   function parseSections(md) {
     if (!md) return {};
     const out = {};
-    // Normalise: convert "**Heading**" lines into "## Heading"
-    const normalised = md.replace(/^\s*\*\*([^*\n]{2,80})\*\*\s*$/gm, '## $1');
+    const KNOWN = [
+      'summary',
+      'key findings', 'findings',
+      'possible conditions mentioned', 'possible conditions', 'conditions mentioned', 'conditions',
+      'recommendations & precautions', 'recommendations and precautions',
+      'recommendations', 'precautions', 'next steps', 'what to do', 'plan',
+      'disclaimer',
+    ];
+    let normalised = md
+      // "**Heading**" alone on a line  ->  "## Heading"
+      .replace(/^\s*\*\*([^*\n]{2,80})\*\*\s*:?\s*$/gm, '## $1')
+      // "### Heading" -> "## Heading"
+      .replace(/^\s*#{3,6}\s+/gm, '## ');
+    // Bare line that matches a known heading -> prepend "## "
+    normalised = normalised.split('\n').map(line => {
+      const stripped = line.trim().replace(/[:.\s]+$/, '');
+      if (!stripped) return line;
+      if (/^##\s+/.test(line)) return line;
+      if (KNOWN.includes(stripped.toLowerCase())) return '## ' + stripped;
+      return line;
+    }).join('\n');
     const parts = normalised.split(/^##\s+/m);
-    // Anything before the first heading
     const intro = parts.shift().trim();
     if (intro) out.__intro = intro;
     parts.forEach(chunk => {
