@@ -50,3 +50,47 @@
   background-size: 200% 100%; animation: shimmer 1.2s infinite linear; border-radius: 4px; margin: 4px 0;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* --- Global motion polish --- */
+@keyframes hv-fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.hv-fadeup { animation: hv-fadeup .45s ease-out both; }
+.hv-fadeup-2 { animation: hv-fadeup .55s ease-out .08s both; }
+.hv-fadeup-3 { animation: hv-fadeup .65s ease-out .16s both; }
+.hv-fadeup-4 { animation: hv-fadeup .75s ease-out .24s both; }
+
+@keyframes hv-blob {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%      { transform: translate(40px,-30px) scale(1.05); }
+  66%      { transform: translate(-30px,20px) scale(.96); }
+}
+.hv-bg {
+  position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg,#f8fafc 0%, #eef9ff 100%);
+}
+.hv-bg::before, .hv-bg::after {
+  content: ""; position: absolute; width: 520px; height: 520px; border-radius: 9999px;
+  filter: blur(80px); opacity: .55;
+  animation: hv-blob 18s ease-in-out infinite;
+}
+.hv-bg::before {
+  top: -160px; left: -120px;
+  background: radial-gradient(circle, #bce5ff 0%, transparent 70%);
+}
+.hv-bg::after {
+  bottom: -200px; right: -120px;
+  background: radial-gradient(circle, #c7f2dd 0%, transparent 70%);
+  animation-delay: -8s;
+}
+
+.hv-card {
+  position: relative; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.hv-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(15,23,42,.18); }
+
+/* Soft grid backdrop used for the body3D card and other dark sections */
+.hv-grid-dark {
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

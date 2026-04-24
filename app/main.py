@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from . import ml, symptoms as sym_mod, rag, risk as risk_mod, glossary as gloss_mod
+from . import ml, symptoms as sym_mod, rag, risk as risk_mod, glossary as gloss_mod, organs as organ_mod
 
 app = FastAPI(title="MediScope AI", version="1.0")
 
@@ -120,6 +120,7 @@ async def api_report_analyze(
     body = body[:8000]
     result = rag.analyze_report(body)
     result["risk"] = risk_mod.assess_report(body)
+    result["organ"] = organ_mod.detect_organ(body, result.get("explanation", ""))
     return result
 
 
