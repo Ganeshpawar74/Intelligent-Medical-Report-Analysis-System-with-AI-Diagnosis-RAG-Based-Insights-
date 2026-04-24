@@ -1,22 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Report Analyzer · HealthVerse AI{% endblock %}
 {% block content %}
-<div class="mb-6">
+<div class="mb-6 hv-fadeup">
   <div class="flex items-center gap-2 text-sm text-slate-500"><span>📄 AI Tools</span><span>›</span><span class="font-semibold text-slate-700">Report Analyzer</span></div>
   <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Decode any Medical Report</h1>
-  <p class="mt-1 text-slate-600 max-w-2xl">Paste a clinical report, lab result, or radiology summary. We will explain it in plain language, flag risk, and suggest next steps.</p>
+  <p class="mt-1 text-slate-600 max-w-2xl">Paste a report and we will explain the most important parts in plain language and show which body part is involved.</p>
 </div>
 
 <div class="grid lg:grid-cols-5 gap-6">
+  <!-- LEFT column: input, samples, 3D body -->
   <section class="lg:col-span-2 space-y-5">
-    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hv-fadeup">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-bold text-slate-900">Your report</h2>
         <span id="repCount" class="text-xs text-slate-400">0 chars</span>
       </div>
       <form id="repForm" class="space-y-4">
         <div class="relative">
-          <textarea name="text" id="repText" rows="13" placeholder="Paste your medical report here…&#10;&#10;Example: SUBJECTIVE: 45-year-old male presents with chest tightness…"
+          <textarea name="text" id="repText" rows="11" placeholder="Paste your medical report here…&#10;&#10;Example: SUBJECTIVE: 45-year-old male presents with chest tightness…"
             class="w-full p-4 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 text-sm font-mono resize-none transition"></textarea>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -33,7 +34,7 @@
       </form>
     </div>
 
-    <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-50 to-emerald-50 border border-brand-100">
+    <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-50 to-emerald-50 border border-brand-100 hv-fadeup-2">
       <h3 class="text-sm font-bold text-slate-900 mb-2">Try a sample</h3>
       <div class="space-y-2">
         <button data-sample="0" class="sampleBtn w-full text-left p-3 rounded-xl bg-white hover:bg-brand-50 border border-slate-200 hover:border-brand-300 transition">
@@ -50,15 +51,33 @@
         </button>
       </div>
     </div>
+
+    <!-- 3D body — moved here, just below the samples box -->
+    <div id="organCard" class="hidden p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 text-white border border-slate-700 shadow-xl hv-grid-dark hv-fadeup-3">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-widest text-brand-300">🫀 Affected body part</div>
+          <h3 id="organTitle" class="mt-1 text-xl font-extrabold leading-tight truncate">—</h3>
+          <p id="organDesc" class="mt-0.5 text-xs text-slate-300/90">—</p>
+        </div>
+        <button id="organReset" type="button" class="flex-shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition">⟳ Spin</button>
+      </div>
+      <div id="bodyMount" class="relative h-[340px] rounded-xl bg-gradient-to-b from-slate-950/70 to-slate-900/60 border border-white/10 overflow-hidden cursor-grab active:cursor-grabbing">
+        <div class="absolute bottom-2 left-3 text-[10px] uppercase tracking-wider text-slate-400 bg-black/30 px-2 py-1 rounded backdrop-blur">Drag to rotate</div>
+      </div>
+      <div id="organCandidates" class="mt-3 flex flex-wrap gap-1.5"></div>
+      <p class="mt-2 text-[10px] text-slate-400/90 leading-snug">Approximate visualization based on terms found in your report. Not a clinical anatomy reference.</p>
+    </div>
   </section>
 
+  <!-- RIGHT column: result -->
   <section class="lg:col-span-3">
-    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm min-h-[480px]">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm min-h-[480px] hv-fadeup-2">
       <h2 class="text-xl font-bold text-slate-900 mb-5">Plain-language explanation</h2>
 
       <div id="repPlaceholder" class="text-center py-20">
         <div class="mx-auto h-20 w-20 rounded-3xl bg-gradient-to-br from-brand-50 to-emerald-50 flex items-center justify-center text-4xl">📋</div>
-        <p class="mt-4 text-sm text-slate-500">Paste a report and click <strong>Analyze</strong> to see your AI-powered breakdown.</p>
+        <p class="mt-4 text-sm text-slate-500">Paste a report and click <strong>Analyze</strong> to see your easy-read summary.</p>
       </div>
 
       <div id="repLoading" class="hidden text-center py-16">
@@ -67,36 +86,10 @@
           <div class="absolute inset-0 rounded-full border-4 border-t-brand-600 border-r-brand-600 border-b-transparent border-l-transparent animate-spin"></div>
           <div class="absolute inset-0 flex items-center justify-center text-2xl">📄</div>
         </div>
-        <p class="mt-4 text-sm font-medium text-slate-700">Reading, retrieving similar cases, and summarising…</p>
+        <p class="mt-4 text-sm font-medium text-slate-700">Reading and summarising your report…</p>
       </div>
 
-      <div id="repResult" class="hidden space-y-5"></div>
-    </div>
-
-    <!-- Affected body part — 3D visualization -->
-    <div id="organCard" class="hidden mt-5 p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 text-white border border-slate-700 shadow-xl">
-      <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
-        <div>
-          <div class="text-[11px] font-bold uppercase tracking-widest text-brand-300">🫀 Affected body part</div>
-          <h3 id="organTitle" class="mt-1 text-2xl font-extrabold">—</h3>
-          <p id="organDesc" class="mt-1 text-sm text-slate-300 max-w-md">—</p>
-        </div>
-        <div class="flex gap-2">
-          <button id="organReset" type="button" class="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition">⟳ Auto-spin</button>
-        </div>
-      </div>
-      <div class="grid md:grid-cols-[1fr_220px] gap-4">
-        <div id="bodyMount" class="relative h-[440px] rounded-xl bg-gradient-to-b from-slate-950/60 to-slate-900/60 border border-white/10 overflow-hidden cursor-grab active:cursor-grabbing">
-          <div class="absolute bottom-2 left-3 text-[10px] uppercase tracking-wider text-slate-400 bg-black/30 px-2 py-1 rounded backdrop-blur">Drag to rotate</div>
-        </div>
-        <div class="space-y-2">
-          <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Detected regions</div>
-          <div id="organCandidates" class="space-y-1.5"></div>
-          <div class="mt-3 text-[11px] text-slate-400 leading-relaxed">
-            Approximate visualization based on keywords found in the report and the AI explanation. Not a clinical anatomy reference.
-          </div>
-        </div>
-      </div>
+      <div id="repResult" class="hidden space-y-4"></div>
     </div>
   </section>
 </div>
@@ -125,6 +118,7 @@
   const fileInput = document.getElementById('repFile');
   fileInput.addEventListener('change', ()=>{ document.getElementById('repFileName').textContent = fileInput.files?.[0]?.name || ''; });
 
+  // ---- 3D body ----
   let bodyHandle = null;
   function mountBody(organ) {
     const card = document.getElementById('organCard');
@@ -135,17 +129,43 @@
     const cands = document.getElementById('organCandidates');
     cands.innerHTML = (organ.candidates || []).map((c, i) => {
       const isTop = i === 0;
-      return `<div class="flex items-center justify-between px-3 py-2 rounded-lg ${isTop ? 'bg-white/15 border border-white/30' : 'bg-white/5 border border-white/10'}">
-        <span class="text-sm ${isTop ? 'font-semibold text-white' : 'text-slate-300'}">${c.label}</span>
-        <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${isTop ? 'bg-brand-500 text-white' : 'bg-white/10 text-slate-300'}">${c.region}</span>
-      </div>`;
+      return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] ${isTop ? 'bg-brand-500 text-white font-semibold' : 'bg-white/10 text-slate-200 border border-white/15'}">${c.label}<span class="opacity-60 uppercase tracking-wider text-[9px]">·${c.region}</span></span>`;
     }).join('');
     if (bodyHandle) { try { bodyHandle.destroy(); } catch (_) {} bodyHandle = null; }
-    const mount = document.getElementById('bodyMount');
-    Body3D.mount(mount, { organKey: organ.key, color: organ.color }).then(h => { bodyHandle = h; });
+    Body3D.mount(document.getElementById('bodyMount'), { organKey: organ.key, color: organ.color }).then(h => { bodyHandle = h; });
     document.getElementById('organReset').onclick = () => bodyHandle?.resetView();
   }
 
+  // ---- Section parser ----
+  // Split the markdown explanation into named sections by "## Heading" or "**Heading**".
+  function parseSections(md) {
+    if (!md) return {};
+    const out = {};
+    // Normalise: convert "**Heading**" lines into "## Heading"
+    const normalised = md.replace(/^\s*\*\*([^*\n]{2,80})\*\*\s*$/gm, '## $1');
+    const parts = normalised.split(/^##\s+/m);
+    // Anything before the first heading
+    const intro = parts.shift().trim();
+    if (intro) out.__intro = intro;
+    parts.forEach(chunk => {
+      const nl = chunk.indexOf('\n');
+      const head = (nl >= 0 ? chunk.slice(0, nl) : chunk).trim().toLowerCase();
+      const body = (nl >= 0 ? chunk.slice(nl + 1) : '').trim();
+      out[head] = body;
+    });
+    return out;
+  }
+
+  function pickSection(sections, keys) {
+    for (const k of keys) {
+      for (const have of Object.keys(sections)) {
+        if (have.includes(k)) return sections[have];
+      }
+    }
+    return '';
+  }
+
+  // ---- Submit ----
   const form = document.getElementById('repForm');
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -161,47 +181,99 @@
       const res = await fetch('/api/report/analyze', { method:'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
       const d = await res.json();
-      const sources = (d.sources || []).map((s,i)=>`<div class="p-3 rounded-lg bg-white border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-3">${s.text.slice(0,300)}…</div></div>`).join('');
-      const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs font-medium">${x}</span>`).join(' ');
+
+      // ---- Compact risk pill ----
       const r = d.risk;
       const c = r?.color || 'slate';
       const icon = r?.level === 'high' ? '🚨' : r?.level === 'moderate' ? '⚠️' : '✅';
       const action = r?.level === 'high'
-        ? '<a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition">Find a nearby doctor →</a>'
+        ? '<a href="https://www.google.com/maps/search/doctor+near+me" target="_blank" rel="noopener" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition shadow whitespace-nowrap">Find a doctor →</a>'
         : '';
-      const matched = (r?.matched_symptoms||[]).slice(0,12).map(s=>`<span class="px-2 py-0.5 rounded-full bg-white/70 border border-${c}-300 text-${c}-900 text-xs">${s.name} · sev ${s.weight}</span>`).join(' ');
-      const alarms = (r?.alarm_keywords||[]).slice(0,8).map(k=>`<span class="med-term px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 text-xs font-semibold" data-term="${k.toLowerCase()}" style="background:#fecaca">${k}</span>`).join(' ');
-      const reasons = (r?.reasons||[]).map(x=>`<li>${x}</li>`).join('');
       const pulse = r?.level === 'high' ? 'animate-pulse' : '';
       const riskHtml = r ? `
-        <div class="p-5 rounded-2xl border-2 border-${c}-300 bg-${c}-50 ${pulse}">
-          <div class="flex items-start gap-3">
-            <div class="text-3xl">${icon}</div>
-            <div class="flex-1">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-extrabold text-${c}-900 text-lg">${r.label}</h3>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold">Severity ${r.score}</span>
-              </div>
-              <p class="mt-1 text-sm text-${c}-900">${r.advice}</p>
-              ${reasons ? `<ul class="mt-2 list-disc list-inside text-xs text-${c}-900/80 space-y-0.5">${reasons}</ul>` : ''}
-              ${alarms ? `<div class="mt-3"><div class="text-xs font-semibold text-${c}-900 mb-1">Alarm keywords</div><div class="flex flex-wrap gap-1">${alarms}</div></div>` : ''}
-              ${matched ? `<div class="mt-3"><div class="text-xs font-semibold text-${c}-900 mb-1">Recognised symptoms (with severity weight)</div><div class="flex flex-wrap gap-1">${matched}</div></div>` : ''}
-              ${action}
+        <div class="flex items-center gap-3 p-3 rounded-2xl border border-${c}-300 bg-${c}-50 ${pulse}">
+          <div class="text-2xl">${icon}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-${c}-900 text-sm">${r.label}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-${c}-200 text-${c}-900 font-semibold uppercase tracking-wider">Severity ${r.score}</span>
             </div>
+            <p class="text-xs text-${c}-900/90 line-clamp-2">${r.advice}</p>
           </div>
+          ${action}
         </div>` : '';
+
+      // ---- Easy-read tabs from the AI explanation ----
+      const sections = parseSections(d.explanation || '');
+      const summary  = pickSection(sections, ['summary']) || sections.__intro || '';
+      const findings = pickSection(sections, ['key findings', 'findings']);
+      const conds    = pickSection(sections, ['possible conditions', 'conditions']);
+      const recs     = pickSection(sections, ['recommendations', 'next step', 'precaut', 'plan']);
+      const disc     = pickSection(sections, ['disclaim']);
+
+      const tabs = [
+        { key: 'sum', icon: '🧾', label: 'Summary',     md: summary,  empty: 'No summary available.' },
+        { key: 'fnd', icon: '🔍', label: 'Findings',    md: findings, empty: 'No specific findings extracted.' },
+        { key: 'do',  icon: '🛡️', label: 'What to do', md: recs,     empty: 'No recommendations available.' },
+      ];
+
+      const tabBtns = tabs.map((t,i)=>`<button data-tab="${t.key}" class="tabBtn flex-1 px-3 py-2.5 text-sm font-semibold transition ${i===0?'bg-white text-brand-700 shadow-sm':'text-slate-600 hover:text-slate-900'} rounded-xl">${t.icon} ${t.label}</button>`).join('');
+      const tabPanels = tabs.map((t,i)=>`<div data-panel="${t.key}" class="${i===0?'':'hidden'} prose prose-sm max-w-none">${marked.parse(t.md || `*${t.empty}*`)}</div>`).join('');
+
+      // ---- Diseases as quick chips ----
+      const dis = (d.diseases_mentioned||[]).map(x=>`<span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs font-medium">${x}</span>`).join(' ');
+
+      // ---- Sources collapsed ----
+      const sources = (d.sources || []).slice(0,5).map((s,i)=>`<div class="p-3 rounded-lg bg-white border border-slate-200 text-xs"><div class="font-semibold text-slate-800">[${i+1}] ${s.title} <span class="font-normal text-slate-400">· ${s.source}${s.specialty?' · '+s.specialty:''}</span></div><div class="mt-1 text-slate-600 line-clamp-2">${s.text.slice(0,260)}…</div></div>`).join('');
+
       result.innerHTML = `
         ${riskHtml}
-        <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-50/40 to-white border border-brand-100">
-          <div class="text-xs font-bold uppercase tracking-wide text-brand-700 mb-1">🤖 AI Explanation</div>
-          <div class="prose prose-sm max-w-none">${marked.parse(d.explanation || '')}</div>
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-1.5 inline-flex w-full" id="repTabs">
+          ${tabBtns}
         </div>
-        ${dis ? `<div class="p-4 rounded-xl bg-slate-50 border border-slate-200"><div class="text-xs font-bold uppercase tracking-wide text-slate-600 mb-2">Diseases mentioned</div><div class="flex flex-wrap gap-1">${dis}</div></div>` : ''}
-        ${sources ? `<details class="rounded-xl border border-slate-200 overflow-hidden"><summary class="cursor-pointer px-4 py-3 bg-slate-50 hover:bg-slate-100 text-sm font-semibold text-slate-800">📚 Retrieved knowledge-base passages (${d.sources.length})</summary><div class="p-3 space-y-2 bg-white">${sources}</div></details>` : ''}
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-brand-50/30 to-white border border-brand-100 min-h-[160px]" id="repPanels">
+          ${tabPanels}
+          ${disc ? `<div class="mt-4 text-[11px] text-slate-500 italic border-t border-slate-200 pt-3">${marked.parseInline(disc.split('\n')[0] || disc)}</div>` : ''}
+        </div>
+
+        ${dis ? `<div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">🏷️ Conditions mentioned</div>
+          <div class="flex flex-wrap gap-1">${dis}</div>
+        </div>` : ''}
+
+        ${conds ? `<details class="rounded-xl border border-slate-200 overflow-hidden group">
+          <summary class="cursor-pointer px-4 py-3 bg-slate-50 hover:bg-slate-100 text-sm font-semibold text-slate-800 flex items-center justify-between">
+            <span>🤔 Possible conditions explained</span>
+            <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform">▾</span>
+          </summary>
+          <div class="p-4 prose prose-sm max-w-none bg-white">${marked.parse(conds)}</div>
+        </details>` : ''}
+
+        ${sources ? `<details class="rounded-xl border border-slate-200 overflow-hidden group">
+          <summary class="cursor-pointer px-4 py-3 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 flex items-center justify-between">
+            <span>📚 Reference passages from the knowledge base (${d.sources.length})</span>
+            <span class="text-slate-400 group-open:rotate-180 transition-transform">▾</span>
+          </summary>
+          <div class="p-3 space-y-2 bg-white">${sources}</div>
+        </details>` : ''}
       `;
       result.classList.remove('hidden');
+
+      // Tab switching
+      const panels = result.querySelectorAll('[data-panel]');
+      const btns = result.querySelectorAll('.tabBtn');
+      btns.forEach(b => b.addEventListener('click', () => {
+        btns.forEach(x => { x.classList.remove('bg-white','text-brand-700','shadow-sm'); x.classList.add('text-slate-600','hover:text-slate-900'); });
+        b.classList.add('bg-white','text-brand-700','shadow-sm');
+        b.classList.remove('text-slate-600','hover:text-slate-900');
+        const k = b.dataset.tab;
+        panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== k));
+      }));
+
       if (window.Glossary) { Glossary.init().then(()=>Glossary.highlight(result)); }
       mountBody(d.organ);
+      result.scrollIntoView({behavior:'smooth', block:'nearest'});
     } catch (err) {
       result.innerHTML = `<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"><strong>Error:</strong> ${err.message}</div>`;
       result.classList.remove('hidden');
