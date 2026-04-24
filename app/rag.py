@@ -17,7 +17,7 @@ DATA_DIR = Path("Data")
 MT_PATH = DATA_DIR / "mtsamples.csv"
 DIS_DIR = DATA_DIR / "Disease Symtoms"
 
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"]
+GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
 
 
 # ---------------------------------------------------------------------------
@@ -109,12 +109,16 @@ KB.build()
 # ---------------------------------------------------------------------------
 
 def _gemini_client():
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
+    api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+    base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+    if not api_key or not base_url:
         return None
     try:
         from google import genai
-        return genai.Client(api_key=api_key)
+        return genai.Client(
+            api_key=api_key,
+            http_options={"api_version": "", "base_url": base_url},
+        )
     except Exception:
         return None
 
@@ -123,13 +127,14 @@ def _gemini_generate(prompt: str, system: Optional[str] = None) -> str:
     client = _gemini_client()
     if client is None:
         return (
-            "AI service is not configured. Please add a GEMINI_API_KEY secret to enable "
-            "AI-generated answers. The retrieved knowledge-base passages are still shown above."
+            "AI service is not configured. The retrieved knowledge-base passages "
+            "are still shown above."
         )
     from google.genai import types
-    config = None
+    config_kwargs = {"max_output_tokens": 8192}
     if system:
-        config = types.GenerateContentConfig(system_instruction=system)
+        config_kwargs["system_instruction"] = system
+    config = types.GenerateContentConfig(**config_kwargs)
     last_err = None
     for model in GEMINI_MODELS:
         try:

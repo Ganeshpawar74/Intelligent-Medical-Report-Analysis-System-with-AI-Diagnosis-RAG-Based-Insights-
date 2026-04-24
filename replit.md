@@ -27,7 +27,9 @@ AI-driven medical platform with explainable diagnosis, RAG-based insights, and a
 
 ## Setup
 - Runtime: Python 3.11.
-- Required secret: `GEMINI_API_KEY`.
+- AI: Gemini access is provided automatically through Replit AI Integrations
+  (env vars `AI_INTEGRATIONS_GEMINI_API_KEY` and `AI_INTEGRATIONS_GEMINI_BASE_URL`
+  are auto-provisioned — no user-supplied API key required).
 - Workflow `Start application` runs:
   `uvicorn app.main:app --host 0.0.0.0 --port 5000 --proxy-headers --forwarded-allow-ips='*'`
 - Deployment target: VM (long-running web server) with the same uvicorn command.

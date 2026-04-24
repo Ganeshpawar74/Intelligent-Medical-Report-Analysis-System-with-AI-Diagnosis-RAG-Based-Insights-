@@ -146,8 +146,7 @@ def _gemini_define(term: str) -> Optional[str]:
     """Ask Gemini for a one-line plain-language definition. Cached."""
     try:
         from . import rag  # reuse the configured Gemini client
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
+        if rag._gemini_client() is None:
             return None
         prompt = (
             f"Define the medical term \"{term}\" in ONE short sentence (max 25 words) "
