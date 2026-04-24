@@ -1,12 +1,22 @@
 {% extends "base.html" %}
-{% block title %}MediScope AI — Explainable Medical Diagnosis{% endblock %}
+{% block title %}HealthVerse AI — Explainable Medical Diagnosis{% endblock %}
 {% block content %}
-<section class="relative overflow-hidden">
-  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-50 via-white to-emerald-50 rounded-3xl"></div>
+
+<!-- ===================== HERO ===================== -->
+<section class="relative overflow-hidden rounded-3xl">
+  <!-- gradient background + soft grid -->
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-50 via-white to-emerald-50"></div>
+  <div class="absolute inset-0 -z-10 hv-hero-grid opacity-50"></div>
+  <!-- floating accent blobs -->
+  <div class="absolute -top-24 -left-24 -z-10 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl hv-float-slow"></div>
+  <div class="absolute -bottom-32 -right-24 -z-10 h-80 w-80 rounded-full bg-emerald-300/30 blur-3xl hv-float-slow" style="animation-delay:-6s"></div>
+
   <div class="px-6 py-16 sm:px-12 sm:py-24 text-center">
-    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-brand-700 bg-brand-100 border border-brand-200">
-      <span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse"></span> The future of explainable healthcare AI
+    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-brand-700 bg-white/80 backdrop-blur border border-brand-200 shadow-sm">
+      <span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+      The future of explainable healthcare AI
     </span>
+
     <h1 class="mt-6 text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.05] hv-fadeup">
       Your Health,<br/>
       <span class="bg-gradient-to-r from-brand-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent">Decoded by AI.</span>
@@ -17,69 +27,177 @@
       meets <span class="font-semibold text-slate-800">RAG-powered insights</span>,
       built for clarity you can trust.
     </p>
-    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-      <a href="/image-analysis" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-600 text-white font-semibold shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition">
+
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3 hv-fadeup-3">
+      <a href="/image-analysis" class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-semibold shadow-lg shadow-brand-600/30 hover:shadow-brand-600/50 hover:-translate-y-0.5 transition">
         Analyze an Image
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        <svg class="w-4 h-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
       </a>
-      <a href="/chat" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-semibold hover:bg-slate-50 transition">
-        Ask the AI Chatbot
+      <a href="/chat" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/80 backdrop-blur border border-slate-200 text-slate-800 font-semibold hover:bg-white hover:-translate-y-0.5 transition shadow-sm">
+        💬 Ask the AI Chatbot
       </a>
+    </div>
+
+    <!-- Trust strip -->
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-slate-500 hv-fadeup-4">
+      <span class="inline-flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Privacy-first · no data stored</span>
+      <span class="inline-flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span> Powered by Gemini 2.5</span>
+      <span class="inline-flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Educational research prototype</span>
+    </div>
+
+    <!-- Live counters band -->
+    <div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto hv-fadeup-4">
+      {% set stats = [
+        ('🧠','statBrain','4','Brain MRI classes'),
+        ('🫁','statXray','2','X-ray classes'),
+        ('🧬','statDis','—','Diseases'),
+        ('📚','statKb','—','KB documents'),
+      ] %}
+      {% for icon,sid,init,lbl in stats %}
+      <div class="hv-stat-card relative overflow-hidden p-4 rounded-2xl bg-white/70 backdrop-blur border border-white/80 shadow-sm">
+        <div class="text-xl">{{ icon }}</div>
+        <div id="{{ sid }}" data-target="{{ init }}" class="mt-1 text-2xl font-extrabold text-slate-900 tabular-nums">{{ init }}</div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">{{ lbl }}</div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-  {% set features = [
-    ('🧠','Brain MRI Analysis','EfficientNet-based 4-class classifier — glioma, meningioma, pituitary, or no tumor.','/image-analysis'),
-    ('🫁','Pneumonia Detection','Chest X-ray binary classifier with calibrated confidence threshold.','/image-analysis'),
-    ('📄','Report Analyzer','Paste a clinical report. Get a plain-language summary, key findings & precautions.','/report-analyzer'),
-    ('💬','RAG Chatbot','Ask anything. Answers grounded in disease KB + medical transcription corpus.','/chat'),
-  ] %}
-  {% for icon,title,desc,href in features %}
-  <a href="{{ href }}" class="hv-card group p-5 rounded-2xl bg-white border border-slate-200 hover:border-brand-300 shadow-sm hv-fadeup-2">
-    <div class="text-3xl">{{ icon }}</div>
-    <h3 class="mt-3 font-bold text-slate-900">{{ title }}</h3>
-    <p class="mt-1 text-sm text-slate-600">{{ desc }}</p>
-    <span class="mt-4 inline-flex items-center text-sm font-semibold text-brand-600 group-hover:text-brand-700">Open →</span>
-  </a>
-  {% endfor %}
+<!-- ===================== FEATURE CARDS ===================== -->
+<section class="mt-16">
+  <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-700">What you can do</p>
+      <h2 class="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900">Four AI tools, one platform.</h2>
+    </div>
+    <a href="/chat" class="text-sm font-semibold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1">Talk to the chatbot →</a>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    {% set features = [
+      ('🧠','Brain MRI Analysis','EfficientNet-based 4-class classifier — glioma, meningioma, pituitary, or no tumor.','/image-analysis','from-brand-500 to-sky-500','brand'),
+      ('🫁','Pneumonia Detection','Chest X-ray binary classifier with calibrated confidence threshold.','/image-analysis','from-emerald-500 to-teal-500','emerald'),
+      ('📄','Report Analyzer','Paste a clinical report. Get a plain-language summary, key findings & precautions.','/report-analyzer','from-amber-500 to-orange-500','amber'),
+      ('💬','RAG Chatbot','Ask anything. Answers grounded in disease KB + medical transcription corpus.','/chat','from-rose-500 to-fuchsia-500','rose'),
+    ] %}
+    {% for icon,title,desc,href,grad,clr in features %}
+    <a href="{{ href }}" class="hv-card hv-feature group relative p-5 rounded-2xl bg-white border border-slate-200 hover:border-{{ clr }}-300 shadow-sm overflow-hidden hv-fadeup-2">
+      <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r {{ grad }} opacity-70 group-hover:opacity-100 transition"></div>
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br {{ grad }} text-white text-2xl shadow-md group-hover:scale-110 transition">{{ icon }}</div>
+      <h3 class="mt-4 font-bold text-slate-900">{{ title }}</h3>
+      <p class="mt-1 text-sm text-slate-600 leading-relaxed">{{ desc }}</p>
+      <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-{{ clr }}-600 group-hover:gap-2 transition-all">Open <span class="transition group-hover:translate-x-0.5">→</span></span>
+    </a>
+    {% endfor %}
+  </div>
 </section>
 
+<!-- ===================== HOW IT WORKS + DISCLAIMER ===================== -->
 <section class="mt-16 grid lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-    <h2 class="text-xl font-bold text-slate-900">How it works</h2>
-    <ol class="mt-4 space-y-4 text-sm text-slate-700">
-      <li class="flex gap-3"><span class="flex-shrink-0 h-7 w-7 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">1</span>
-        <div><strong>Upload or type.</strong> A medical image, a typed report, or a list of symptoms.</div></li>
-      <li class="flex gap-3"><span class="flex-shrink-0 h-7 w-7 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">2</span>
-        <div><strong>Our model predicts.</strong> Your trained Keras CNNs handle imaging; a Naïve-Bayes layer ranks candidate diseases for symptoms.</div></li>
-      <li class="flex gap-3"><span class="flex-shrink-0 h-7 w-7 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">3</span>
-        <div><strong>RAG retrieves context.</strong> TF-IDF search over the disease KB and medical transcription dataset finds the most relevant passages.</div></li>
-      <li class="flex gap-3"><span class="flex-shrink-0 h-7 w-7 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">4</span>
-        <div><strong>Gemini explains.</strong> The findings and context are turned into a friendly summary with recommendations and precautions.</div></li>
-    </ol>
+  <div class="lg:col-span-2 p-7 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-brand-100/60 blur-3xl"></div>
+    <div class="relative">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-700">Inside the engine</p>
+      <h2 class="mt-1 text-2xl font-extrabold text-slate-900">How it works</h2>
+
+      <ol class="mt-6 grid sm:grid-cols-2 gap-4">
+        {% set steps = [
+          ('1','Upload or type','A medical image, a typed report, or a list of symptoms.'),
+          ('2','Our model predicts','Trained Keras CNNs handle imaging; a Naïve-Bayes layer ranks candidate diseases for symptoms.'),
+          ('3','RAG retrieves context','TF-IDF search over the disease KB and medical transcription dataset finds the most relevant passages.'),
+          ('4','Gemini explains','Findings and context are turned into a friendly summary with recommendations and precautions.'),
+        ] %}
+        {% for n,h,d in steps %}
+        <li class="flex gap-3 p-4 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-100">
+          <span class="flex-shrink-0 h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white text-sm font-extrabold flex items-center justify-center shadow">{{ n }}</span>
+          <div>
+            <div class="font-bold text-slate-900 text-sm">{{ h }}</div>
+            <div class="mt-0.5 text-xs text-slate-600 leading-relaxed">{{ d }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
   </div>
-  <div class="p-6 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white shadow-lg">
-    <h2 class="text-xl font-bold">Important</h2>
-    <p class="mt-3 text-sm text-brand-50">
-      MediScope AI is an educational research prototype. It does not provide medical advice
-      and is not a substitute for diagnosis or treatment from a licensed clinician. If you
-      are experiencing a medical emergency, please contact your local emergency services.
-    </p>
-    <div class="mt-6 grid grid-cols-3 gap-3 text-center">
-      <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold" id="statDiseases">…</div><div class="text-xs opacity-80">Diseases</div></div>
-      <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold" id="statSymptoms">…</div><div class="text-xs opacity-80">Symptoms</div></div>
-      <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold" id="statKb">…</div><div class="text-xs opacity-80">KB Docs</div></div>
+
+  <div class="p-7 rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-slate-900 text-white shadow-xl relative overflow-hidden hv-grid-dark">
+    <div class="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-brand-400/30 blur-3xl"></div>
+    <div class="relative">
+      <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/10 border border-white/20">⚠️ Important</div>
+      <h2 class="mt-3 text-xl font-extrabold">Use responsibly</h2>
+      <p class="mt-3 text-sm text-brand-50/90 leading-relaxed">
+        HealthVerse AI is an educational research prototype. It does not provide medical advice
+        and is not a substitute for diagnosis or treatment from a licensed clinician. If you
+        are experiencing a medical emergency, please contact your local emergency services.
+      </p>
+      <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+        <div class="rounded-xl p-3 bg-white/10 border border-white/15"><div class="text-xl font-extrabold tabular-nums" id="statDiseases" data-target="…">…</div><div class="text-[10px] uppercase tracking-wider opacity-80">Diseases</div></div>
+        <div class="rounded-xl p-3 bg-white/10 border border-white/15"><div class="text-xl font-extrabold tabular-nums" id="statSymptoms" data-target="…">…</div><div class="text-[10px] uppercase tracking-wider opacity-80">Symptoms</div></div>
+        <div class="rounded-xl p-3 bg-white/10 border border-white/15"><div class="text-xl font-extrabold tabular-nums" id="statKbDark" data-target="…">…</div><div class="text-[10px] uppercase tracking-wider opacity-80">KB Docs</div></div>
+      </div>
+      <a href="/chat" class="mt-6 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-brand-700 text-sm font-bold hover:bg-brand-50 transition shadow">Chat with AI Doctor →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA BAND ===================== -->
+<section class="mt-16 relative overflow-hidden rounded-3xl">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-r from-brand-600 via-sky-500 to-emerald-500"></div>
+  <div class="absolute inset-0 -z-10 hv-hero-grid opacity-20 mix-blend-overlay"></div>
+  <div class="relative px-8 py-12 sm:px-12 sm:py-14 flex flex-col sm:flex-row items-center gap-6 justify-between">
+    <div class="text-white max-w-xl">
+      <h3 class="text-2xl sm:text-3xl font-extrabold">Ready to decode your next report?</h3>
+      <p class="mt-2 text-sm sm:text-base text-white/90">Drop in a clinical report or upload an image — get an instant, easy-to-read explanation.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a href="/report-analyzer" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-brand-700 font-bold shadow-lg hover:-translate-y-0.5 transition">📄 Open Report Analyzer</a>
+      <a href="/symptom-checker" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/15 backdrop-blur text-white font-semibold border border-white/30 hover:bg-white/25 transition">🤒 Try Symptom Checker</a>
     </div>
   </div>
 </section>
 
 <script>
+  // Count-up animation for any element with data-target=number
+  function countUp(el, target, ms = 1200) {
+    const start = performance.now();
+    const from = 0;
+    function tick(now) {
+      const t = Math.min(1, (now - start) / ms);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(from + (target - from) * eased).toLocaleString();
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
   fetch('/api/health').then(r=>r.json()).then(d=>{
-    document.getElementById('statDiseases').textContent = d.diseases ?? '—';
-    document.getElementById('statSymptoms').textContent = d.symptoms ?? '—';
-    document.getElementById('statKb').textContent = d.kb_docs ?? '—';
+    const map = {
+      statDiseases: d.diseases,
+      statSymptoms: d.symptoms,
+      statKbDark: d.kb_docs,
+      statKb: d.kb_docs,
+      statDis: d.diseases,
+    };
+    Object.entries(map).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (!el || v == null) return;
+      el.dataset.target = String(v);
+    });
+    // animate when visible
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const t = Number(el.dataset.target);
+        if (Number.isFinite(t)) countUp(el, t);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('[data-target]').forEach(el => {
+      const t = Number(el.dataset.target);
+      if (Number.isFinite(t)) obs.observe(el);
+    });
   }).catch(()=>{});
 </script>
 {% endblock %}
