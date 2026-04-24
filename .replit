@@ -43,4 +43,4 @@ run = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--prox
 [userenv]
 
 [userenv.shared]
-GEMINI_API_KEY = "AIzaSyDT-wwY9A4s8w-LMGBsr7ynFeTI9khzRoM"
+GEMINI_API_KEY = "AIzaSyDqXiNkOHmBsmezWbYtqd6M-rk_4wGRhp8"
