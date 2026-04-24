@@ -226,6 +226,13 @@
       // ---- Easy-read tabs from the AI explanation ----
       const sections = parseSections(d.explanation || '');
       const summary  = pickSection(sections, ['summary']) || sections.__intro || '';
+      if (window.HV) window.HV.saveContext({
+        type: 'report',
+        badge: '📄',
+        label: (d.diseases_mentioned && d.diseases_mentioned[0]) || 'Medical report',
+        diseases: d.diseases_mentioned || [],
+        summary: (summary || '').slice(0, 600)
+      });
       const findings = pickSection(sections, ['key findings', 'findings']);
       const conds    = pickSection(sections, ['possible conditions', 'conditions']);
       const recs     = pickSection(sections, ['recommendations', 'next step', 'precaut', 'plan']);

@@ -185,6 +185,13 @@
       }).join('') || '<div class="text-sm text-slate-500">No matches.</div>';
       result.innerHTML = sevBanner + cards;
       result.classList.remove('hidden');
+      if (window.HV) window.HV.saveContext({
+        type: 'symptom',
+        badge: '🤒',
+        label: (d.results && d.results[0] && d.results[0].disease) || 'Symptom check',
+        symptoms: [...selected],
+        topResults: (d.results || []).slice(0, 3).map(r => ({ disease: r.disease, probability: r.probability }))
+      });
     } catch (err) {
       result.innerHTML = `<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700"><strong>Error:</strong> ${err.message}</div>`;
       result.classList.remove('hidden');

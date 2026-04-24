@@ -35,6 +35,15 @@
       </div>
     </div>
 
+    <div id="ctxChip" class="hidden mx-3 mt-3 -mb-1 p-3 rounded-2xl bg-gradient-to-r from-brand-50 to-emerald-50 border border-brand-200 flex items-center gap-3 text-sm">
+      <span id="ctxBadge" class="flex-shrink-0 h-9 w-9 rounded-xl bg-white inline-flex items-center justify-center text-lg shadow-sm border border-brand-100">📄</span>
+      <div class="min-w-0 flex-1">
+        <div class="text-[11px] uppercase tracking-wider font-bold text-brand-700">Following up on</div>
+        <div id="ctxLabel" class="font-semibold text-slate-900 truncate">—</div>
+      </div>
+      <button type="button" id="ctxUse" class="px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition shadow whitespace-nowrap">Ask about this</button>
+      <button type="button" id="ctxDismiss" class="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white transition" aria-label="Dismiss">✕</button>
+    </div>
     <form id="chatForm" class="p-3 border-t border-slate-200 bg-white">
       <div class="flex gap-2 items-end">
         <div class="flex-1 relative">
@@ -152,6 +161,43 @@
     log.innerHTML = '';
     bubble('assistant', '👋 Hi there! Ask me anything about a condition, symptom, treatment, or report.');
   });
+
+  // ---- Context chip from a recent analysis ----
+  function buildPrompt(c) {
+    if (c.type === 'image') {
+      const conf = (c.confidence != null) ? ` (about ${(c.confidence*100).toFixed(0)}% confidence)` : '';
+      return `I just analyzed a medical image and the AI suggested: ${c.label}${conf}. Can you explain what this means in simple words, what I should do next, and any warning signs I should watch for?`;
+    }
+    if (c.type === 'report') {
+      const dis = (c.diseases||[]).slice(0,3).join(', ');
+      const tail = c.summary ? `\n\nHere is the AI summary I got:\n"${c.summary}"` : '';
+      return `I just analyzed a medical report${dis ? ` mentioning ${dis}` : ''}. Can you explain it in plain words, tell me which doctor to see, and what tests or precautions are recommended?${tail}`;
+    }
+    if (c.type === 'symptom') {
+      const sx = (c.symptoms||[]).slice(0,8).map(s=>String(s).replace(/_/g,' ')).join(', ');
+      return `Based on my symptoms (${sx}), the symptom checker's top match was ${c.label}. Can you tell me more about it, what could be causing it, and what I should do next?`;
+    }
+    return `Can you tell me more about ${c.label}?`;
+  }
+
+  const chip = document.getElementById('ctxChip');
+  const ctx = (window.HV && window.HV.readContext) ? window.HV.readContext(30*60*1000) : null;
+  if (ctx && chip) {
+    document.getElementById('ctxBadge').textContent = ctx.badge || '💡';
+    const labels = {image:'Image analysis', report:'Report analysis', symptom:'Symptom check'};
+    document.getElementById('ctxLabel').textContent = `${labels[ctx.type] || 'Recent analysis'} · ${ctx.label}`;
+    chip.classList.remove('hidden');
+    document.getElementById('ctxUse').addEventListener('click', () => {
+      input.value = buildPrompt(ctx);
+      autoresize();
+      input.focus();
+      chip.classList.add('hidden');
+    });
+    document.getElementById('ctxDismiss').addEventListener('click', () => {
+      chip.classList.add('hidden');
+      if (window.HV) window.HV.clearContext();
+    });
+  }
 </script>
 <style>
   @keyframes fade-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }

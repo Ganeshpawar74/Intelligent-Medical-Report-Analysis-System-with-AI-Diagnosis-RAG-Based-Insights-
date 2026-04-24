@@ -265,6 +265,13 @@
     resultEl.classList.remove('hidden');
     if (window.Glossary) { Glossary.init().then(()=>Glossary.highlight(resultEl)); }
     wireExplTabs(resultEl);
+    if (window.HV) window.HV.saveContext({
+      type: 'image',
+      badge: isNormal ? '✅' : '🩻',
+      label: d.label || 'Image finding',
+      confidence: d.confidence,
+      modality: d.modality || ''
+    });
   }
 
   // ---- Section parser (same tolerant logic as report analyzer) ----
