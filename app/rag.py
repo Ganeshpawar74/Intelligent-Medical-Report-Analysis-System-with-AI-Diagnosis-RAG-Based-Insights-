@@ -245,25 +245,63 @@ def analyze_report(report_text: str) -> Dict:
     }
 
 
+IMAGE_SYSTEM = (
+    "You are a medical imaging explainer assisting a non-medical user. "
+    "An AI screening model has produced a predicted finding from a medical image. "
+    "Your job is to explain that specific finding with real, condition-specific "
+    "medical context — NOT generic 'see a doctor' language.\n\n"
+    "For 'Recommended next steps', name the actual investigations a clinician would "
+    "typically order (e.g. for a brain tumour: contrast-enhanced MRI, neurosurgical "
+    "referral, possible stereotactic biopsy, neuro-oncology consult, MR spectroscopy; "
+    "for pneumonia: chest X-ray review, sputum/blood cultures, CBC, CRP, oxygen "
+    "saturation check, possibly CT chest, antibiotic therapy as prescribed). Name the "
+    "type of specialist (radiologist, neurosurgeon, neuro-oncologist, pulmonologist, "
+    "infectious-disease physician) and the typical urgency (emergency, within 24-48h, "
+    "within 1-2 weeks).\n\n"
+    "For 'Precautions', give condition-specific warning signs that mean GO TO ER NOW "
+    "(e.g. brain tumour: sudden severe headache, new seizure, vomiting, sudden vision "
+    "loss, weakness on one side, confusion; pneumonia: severe breathlessness at rest, "
+    "blue lips, chest pain, confusion, oxygen saturation under 92%, high fever that "
+    "won't break) and sensible day-to-day precautions (rest, hydration, avoiding "
+    "driving/heavy machinery if seizures are a risk, isolation if infectious, etc.).\n\n"
+    "STRICT OUTPUT FORMAT — you MUST follow this exactly:\n"
+    "- Respond in Markdown.\n"
+    "- Do NOT write any preamble before the first heading.\n"
+    "- Use these EXACT four section headings, each on its own line, prefixed with '## ':\n"
+    "  ## What this means\n"
+    "  ## Recommended next steps\n"
+    "  ## Precautions\n"
+    "  ## Disclaimer\n"
+    "- Under 'Recommended next steps' and 'Precautions', use a bulleted list ('- ...') "
+    "with at least 4 specific, named items each. Never write generic filler like "
+    "'have a healthcare professional review this' as the only point.\n"
+    "- Under 'Disclaimer', include one short paragraph noting this is an automated "
+    "screening tool and not a substitute for a radiologist or licensed clinician."
+)
+
+
 def explain_image_finding(finding: Dict) -> str:
     """Friendly explanation of an image-classification result, with KB context."""
     label = finding.get("label", "")
     task = finding.get("task", "")
     confidence = finding.get("confidence", 0.0)
-    query = f"{label} {task} diagnosis treatment precautions"
-    ctx = KB.search(query, k=3)
+    query = f"{label} {task} diagnosis treatment precautions workup"
+    ctx = KB.search(query, k=4)
     ctx_text = "\n\n".join(
-        f"[{i+1}] {c['title']}\n{c['text'][:700]}" for i, c in enumerate(ctx)
+        f"[{i+1}] {c['title']}\n{c['text'][:900]}" for i, c in enumerate(ctx)
     ) or "(no relevant passages found)"
+    task_friendly = {
+        "brain_tumor": "brain MRI screening for tumours",
+        "pneumonia": "chest X-ray screening for pneumonia",
+    }.get(task, task)
     prompt = (
-        f"An AI image classifier examined a medical image (task: {task}). "
-        f"It predicted: {label} with confidence {confidence:.1%}. "
+        f"An AI image classifier examined a medical image (task: {task_friendly}).\n"
+        f"Predicted finding: **{label}** with confidence {confidence:.1%}.\n"
         f"All class probabilities: {finding.get('all_probs')}.\n\n"
-        f"Reference passages:\n{ctx_text}\n\n"
-        "In simple plain language, explain what this finding means, what the user "
-        "should do next, what precautions are reasonable, and remind them this is "
-        "an automated screening tool that does not replace a radiologist or doctor. "
-        "Use Markdown with sections: What this means, Recommended next steps, "
-        "Precautions, Disclaimer."
+        f"Reference passages from the medical knowledge base:\n{ctx_text}\n\n"
+        "Now produce the structured explanation following the strict format. "
+        "Tailor every section to this specific finding — do not give generic advice. "
+        "Use the reference passages to inform the workup, treatment patterns, and "
+        "precautions you mention."
     )
-    return _gemini_generate(prompt, system=CHAT_SYSTEM)
+    return _gemini_generate(prompt, system=IMAGE_SYSTEM)
