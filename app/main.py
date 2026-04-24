@@ -13,6 +13,24 @@ from . import ml, symptoms as sym_mod, rag, risk as risk_mod, glossary as gloss_
 
 app = FastAPI(title="MediScope AI", version="1.0")
 
+
+@app.on_event("startup")
+def _warmup_models() -> None:
+    """Pre-load Keras models at startup so the first user request is fast."""
+    import threading
+
+    def _bg():
+        try:
+            ml.get_brain_model()
+        except Exception:
+            pass
+        try:
+            ml.get_pneu_model()
+        except Exception:
+            pass
+
+    threading.Thread(target=_bg, daemon=True).start()
+
 BASE_DIR = os.path.dirname(__file__)
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -72,11 +90,35 @@ async def api_image_predict(
         raise HTTPException(500, f"Model inference failed: {e}")
     result["preview"] = ml.encode_image_b64(data)
     result["risk"] = risk_mod.assess_image_finding(result)
-    try:
-        result["explanation"] = rag.explain_image_finding(result)
-    except Exception as e:
-        result["explanation"] = f"(AI explanation unavailable: {e})"
+    # NOTE: AI explanation is now fetched separately via /api/image/explain
+    # so the prediction returns immediately without waiting on the LLM.
     return result
+
+
+class ImageExplainRequest(BaseModel):
+    task: str
+    label: str
+    confidence: float
+    all_probs: Optional[dict] = None
+    is_normal: Optional[bool] = None
+
+
+@app.post("/api/image/explain")
+def api_image_explain(req: ImageExplainRequest):
+    if req.task not in ("brain_tumor", "pneumonia"):
+        raise HTTPException(400, "task must be 'brain_tumor' or 'pneumonia'")
+    payload = {
+        "task": req.task,
+        "label": req.label,
+        "confidence": req.confidence,
+        "all_probs": req.all_probs or {},
+        "is_normal": req.is_normal if req.is_normal is not None else False,
+    }
+    try:
+        explanation = rag.explain_image_finding(payload)
+    except Exception as e:
+        explanation = f"(AI explanation unavailable: {e})"
+    return {"explanation": explanation}
 
 
 # ----------- API: Symptom checker -----------------------------------------

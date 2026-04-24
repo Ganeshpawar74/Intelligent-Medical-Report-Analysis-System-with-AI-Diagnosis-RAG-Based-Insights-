@@ -199,8 +199,15 @@
     btn.disabled = true;
     try {
       const res = await fetch('/api/report/analyze', { method:'POST', body: fd });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-      const d = await res.json();
+      const d = await (async () => {
+        const t = await res.text();
+        try { return JSON.parse(t); }
+        catch (_) {
+          if (res.status === 504 || res.status === 502) return { detail: 'The request timed out — the AI may be warming up. Please try again in a few seconds.' };
+          return { detail: `Server returned an unexpected response (HTTP ${res.status}). Please try again.` };
+        }
+      })();
+      if (!res.ok) throw new Error(d.detail || 'Failed');
 
       // ---- Compact risk pill ----
       const r = d.risk;

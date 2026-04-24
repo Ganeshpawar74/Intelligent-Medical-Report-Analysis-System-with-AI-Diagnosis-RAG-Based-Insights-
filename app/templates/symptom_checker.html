@@ -133,7 +133,14 @@
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ symptoms:[...selected], top_k: 4 })
       });
-      const d = await res.json();
+      const d = await (async () => {
+        const t = await res.text();
+        try { return JSON.parse(t); }
+        catch (_) {
+          if (res.status === 504 || res.status === 502) return { detail: 'The request timed out. Please try again.' };
+          return { detail: `Server returned an unexpected response (HTTP ${res.status}). Please try again.` };
+        }
+      })();
       if (!res.ok) throw new Error(d.detail || 'Failed');
       const totalSev = d.results?.[0]?.severity_score ?? 0;
       const sevLevel = totalSev >= 12 ? 'high' : totalSev >= 6 ? 'moderate' : 'low';
