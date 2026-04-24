@@ -136,6 +136,23 @@
   border-radius: 50%;
 }
 
+/* Floating "Ask AI Doctor" button */
+@keyframes hv-fab-in {
+  0%   { opacity: 0; transform: translateY(20px) scale(.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hv-fab-glow {
+  0%, 100% { box-shadow: 0 18px 40px -10px rgba(26,125,240,.55), 0 0 0 0 rgba(16,185,129,.35); }
+  50%      { box-shadow: 0 22px 50px -10px rgba(26,125,240,.65), 0 0 0 10px rgba(16,185,129,0); }
+}
+.hv-fab {
+  background: linear-gradient(135deg, #1a7df0 0%, #319cff 50%, #10b981 100%);
+  background-size: 180% 180%;
+  animation: hv-fab-in .5s ease-out .4s both, hv-fab-glow 3s ease-in-out 1.2s infinite;
+  transition: transform .25s ease, background-position .8s ease, box-shadow .25s ease;
+}
+.hv-fab:hover { background-position: 100% 0%; }
+
 /* Glassy stat tile used inside dark surfaces */
 .hv-glass-tile {
   background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));

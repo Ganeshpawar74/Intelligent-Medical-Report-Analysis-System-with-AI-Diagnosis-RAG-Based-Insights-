@@ -93,6 +93,16 @@
     </div>
   </footer>
 
+  {% if page != 'chat' %}
+  <a href="/chat" id="hvFab" class="hv-fab group fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 pl-4 pr-5 py-3.5 rounded-full text-white font-semibold shadow-2xl shadow-brand-600/40 ring-1 ring-white/20 hover:-translate-y-0.5 transition" aria-label="Chat with AI Doctor">
+    <span class="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.83L3 20l1.17-3.5A7.94 7.94 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white animate-pulse"></span>
+    </span>
+    <span class="hidden sm:inline whitespace-nowrap">Ask AI Doctor</span>
+  </a>
+  {% endif %}
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/static/app.js"></script>
   <script src="/static/glossary.js"></script>
