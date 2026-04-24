@@ -256,24 +256,94 @@
       </div>
       ${riskBanner(d.risk)}
       <div>
-        <button id="explToggle" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-brand-50 to-emerald-50 border border-brand-200 hover:from-brand-100 transition">
-          <span class="font-semibold text-brand-800 flex items-center gap-2">🤖 AI Explanation</span>
-          <svg id="explChev" class="w-5 h-5 text-brand-700 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div id="explBlock" class="prose prose-sm max-w-none mt-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
-          ${marked.parse(d.explanation || '')}
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-semibold text-brand-800 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-50 to-emerald-50 border border-brand-200">🤖 AI Explanation</span>
         </div>
+        ${renderExplTabs(d.explanation || '')}
       </div>
     `;
     resultEl.classList.remove('hidden');
     if (window.Glossary) { Glossary.init().then(()=>Glossary.highlight(resultEl)); }
-    const tog = document.getElementById('explToggle');
-    const blk = document.getElementById('explBlock');
-    const chev = document.getElementById('explChev');
-    tog.addEventListener('click', ()=>{
-      blk.classList.toggle('hidden');
-      chev.style.transform = blk.classList.contains('hidden') ? 'rotate(-90deg)' : '';
+    wireExplTabs(resultEl);
+  }
+
+  // ---- Section parser (same tolerant logic as report analyzer) ----
+  function parseSections(md) {
+    if (!md) return {};
+    const out = {};
+    const KNOWN = [
+      'summary', 'what this means',
+      'key findings', 'findings',
+      'what to do', 'recommended next steps', 'recommendations & precautions',
+      'recommendations and precautions', 'recommendations', 'precautions',
+      'next steps', 'plan',
+      'disclaimer',
+    ];
+    let normalised = md
+      .replace(/^\s*\*\*([^*\n]{2,80})\*\*\s*:?\s*$/gm, '## $1')
+      .replace(/^\s*#{3,6}\s+/gm, '## ');
+    normalised = normalised.split('\n').map(line => {
+      const stripped = line.trim().replace(/[:.\s]+$/, '');
+      if (!stripped) return line;
+      if (/^##\s+/.test(line)) return line;
+      if (KNOWN.includes(stripped.toLowerCase())) return '## ' + stripped;
+      return line;
+    }).join('\n');
+    const parts = normalised.split(/^##\s+/m);
+    const intro = parts.shift().trim();
+    if (intro) out.__intro = intro;
+    parts.forEach(chunk => {
+      const nl = chunk.indexOf('\n');
+      const head = (nl >= 0 ? chunk.slice(0, nl) : chunk).trim().toLowerCase();
+      const body = (nl >= 0 ? chunk.slice(nl + 1) : '').trim();
+      out[head] = body;
     });
+    return out;
+  }
+
+  function pickSection(sections, keys) {
+    for (const k of keys) {
+      for (const have of Object.keys(sections)) {
+        if (have.includes(k)) return sections[have];
+      }
+    }
+    return '';
+  }
+
+  function renderExplTabs(md) {
+    const sections = parseSections(md);
+    const summary  = pickSection(sections, ['summary', 'what this means']) || sections.__intro || '';
+    const findings = pickSection(sections, ['key findings', 'findings']);
+    const whatToDo = pickSection(sections, ['what to do', 'recommended next steps', 'recommendations', 'precautions', 'next steps']);
+    const disc     = pickSection(sections, ['disclaim']);
+    const tabs = [
+      { key: 'sum', icon: '🧾', label: 'Summary',    md: summary,  empty: 'No summary available.' },
+      { key: 'fnd', icon: '🔍', label: 'Findings',   md: findings, empty: 'No specific findings extracted.' },
+      { key: 'do',  icon: '🛡️', label: 'What to do', md: whatToDo, empty: 'No recommendations available.' },
+    ];
+    const tabBtns = tabs.map((t,i)=>`<button data-tab="${t.key}" class="explTabBtn flex-1 px-3 py-2.5 text-sm font-semibold transition ${i===0?'bg-white text-brand-700 shadow-sm':'text-slate-600 hover:text-slate-900'} rounded-xl">${t.icon} ${t.label}</button>`).join('');
+    const tabPanels = tabs.map((t,i)=>`<div data-panel="${t.key}" class="${i===0?'':'hidden'} prose prose-sm max-w-none">${marked.parse(t.md || `*${t.empty}*`)}</div>`).join('');
+    return `
+      <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-1.5 inline-flex w-full" id="explTabs">
+        ${tabBtns}
+      </div>
+      <div class="mt-2 p-4 rounded-2xl bg-gradient-to-br from-brand-50/30 to-white border border-brand-100 min-h-[160px]" id="explPanels">
+        ${tabPanels}
+        ${disc ? `<div class="mt-4 text-[11px] text-slate-500 italic border-t border-slate-200 pt-3">${marked.parseInline(disc.split('\n')[0] || disc)}</div>` : ''}
+      </div>
+    `;
+  }
+
+  function wireExplTabs(scope) {
+    const panels = scope.querySelectorAll('[data-panel]');
+    const btns = scope.querySelectorAll('.explTabBtn');
+    btns.forEach(b => b.addEventListener('click', () => {
+      btns.forEach(x => { x.classList.remove('bg-white','text-brand-700','shadow-sm'); x.classList.add('text-slate-600','hover:text-slate-900'); });
+      b.classList.add('bg-white','text-brand-700','shadow-sm');
+      b.classList.remove('text-slate-600','hover:text-slate-900');
+      const k = b.dataset.tab;
+      panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== k));
+    }));
   }
 </script>
 {% endblock %}
