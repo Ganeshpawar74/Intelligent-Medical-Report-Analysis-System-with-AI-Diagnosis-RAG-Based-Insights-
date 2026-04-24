@@ -109,6 +109,13 @@ KB.build()
 # ---------------------------------------------------------------------------
 
 def _gemini_client():
+    direct_key = os.environ.get("GEMINI_API_KEY")
+    if direct_key:
+        try:
+            from google import genai
+            return genai.Client(api_key=direct_key)
+        except Exception:
+            return None
     api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
     base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
     if not api_key or not base_url:

@@ -161,8 +161,11 @@ def health():
     return {
         "status": "ok",
         "gemini_configured": bool(
-            os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
-            and os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+            os.environ.get("GEMINI_API_KEY")
+            or (
+                os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+                and os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+            )
         ),
         "kb_docs": len(rag.KB.docs),
         "diseases": len(sym_mod.all_diseases()),

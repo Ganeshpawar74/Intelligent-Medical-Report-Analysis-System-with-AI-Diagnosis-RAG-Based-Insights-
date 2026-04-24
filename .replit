@@ -39,3 +39,8 @@ externalPort = 80
 [deployment]
 deploymentTarget = "vm"
 run = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--proxy-headers", "--forwarded-allow-ips=*"]
+
+[userenv]
+
+[userenv.shared]
+GEMINI_API_KEY = "AIzaSyAk8HXqqXf2pZ3-tsjH8JLueeXJW8gjvUM"
