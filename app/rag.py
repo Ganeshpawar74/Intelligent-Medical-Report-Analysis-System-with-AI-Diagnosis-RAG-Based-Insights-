@@ -17,7 +17,12 @@ DATA_DIR = Path("Data")
 MT_PATH = DATA_DIR / "mtsamples.csv"
 DIS_DIR = DATA_DIR / "Disease Symtoms"
 
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"]
+GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+]
 
 
 # ---------------------------------------------------------------------------
